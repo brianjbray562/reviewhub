@@ -584,6 +584,8 @@ label{font-size:11px;font-weight:600;color:var(--text2);display:block;margin-bot
               <option value="high">4–5 star only</option>
             </select>
             <button class="btn btn-primary" id="ai-run-btn" onclick="runInsights()">Generate insights ✦</button>
+            <button class="btn" id="ai-export-btn" onclick="exportInsights()" style="display:none" title="Export insights as text file">↓ Export</button>
+            <button class="btn btn-info" id="ai-ticket-btn" onclick="openInsightTicket()" style="display:none" title="Create a ticket from this insight">+ Create ticket</button>
           </div>
           <div id="ai-output" style="padding:16px">
             <div class="empty-state" style="padding:24px 0">
@@ -612,6 +614,33 @@ label{font-size:11px;font-weight:600;color:var(--text2);display:block;margin-bot
             <input type="file" id="file-input" accept=".xlsx,.xls" style="display:none" onchange="handleFileInput(event)" aria-label="Select xlsx file"/>
             <div id="import-status" style="font-size:12px;color:var(--text2);margin-top:8px" aria-live="polite"></div>
             <div id="import-log" style="margin-top:10px;max-height:200px;overflow-y:auto"></div>
+          </div>
+        </div>
+
+        <div class="panel" style="max-width:580px" id="export-for-repo-panel">
+          <div class="panel-header">
+            <span class="panel-title">Share with your team</span>
+            <span class="panel-sub">Commit to GitHub so everyone loads the same data</span>
+          </div>
+          <div style="padding:18px;display:flex;flex-direction:column;gap:14px">
+            <div style="font-size:12px;color:var(--text2);line-height:1.7">
+              After importing your .xlsx, export the data as <code style="background:var(--surface2);padding:1px 5px;border-radius:3px;font-family:monospace">reviews.json</code> and commit it to your GitHub repo at <code style="background:var(--surface2);padding:1px 5px;border-radius:3px;font-family:monospace">public/data/reviews.json</code>. Every team member will automatically load this database when they open the app — no importing required.
+            </div>
+            <div style="background:var(--surface2);border-radius:var(--radius-sm);padding:12px 14px;font-size:11px;color:var(--text2);line-height:1.8;border:1px solid var(--border)">
+              <strong style="color:var(--text);display:block;margin-bottom:6px">How to update the shared database:</strong>
+              1. Import your latest .xlsx above<br>
+              2. Click <strong>Export reviews.json</strong> below<br>
+              3. In GitHub → your repo → <code style="background:var(--surface3);padding:1px 4px;border-radius:3px">public/data/</code> → Upload files<br>
+              4. Drop in the downloaded file → Commit<br>
+              5. Render redeploys in ~1 min — all users get the update on next login
+            </div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <button class="btn btn-primary" onclick="exportForRepo()" id="export-repo-btn">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" style="width:13px;height:13px"><path d="M8 11V2M5 8l3 3 3-3M2 13h12"/></svg>
+                Export reviews.json
+              </button>
+              <span id="export-repo-status" style="font-size:11px;color:var(--text3)"></span>
+            </div>
           </div>
         </div>
       </div>
@@ -675,6 +704,13 @@ label{font-size:11px;font-weight:600;color:var(--text2);display:block;margin-bot
       <div class="page" id="page-settings">
         <div class="settings-section">
           <div class="settings-title">Integrations</div>
+          <div class="settings-row">
+            <div>
+              <div class="settings-label">PostgreSQL database</div>
+              <div class="settings-desc">Set <code>DATABASE_URL</code> in Render. Stores shared tickets, tags, and escalations.</div>
+            </div>
+            <span class="settings-status" id="status-db">Checking...</span>
+          </div>
           <div class="settings-row">
             <div>
               <div class="settings-label">Anthropic API key</div>
@@ -788,6 +824,53 @@ label{font-size:11px;font-weight:600;color:var(--text2);display:block;margin-bot
   </div>
 </div>
 
+<!-- ── INSIGHT TICKET MODAL ────────────────────────────────────────────────── -->
+<div class="modal-overlay" id="modal-insight-ticket" role="dialog" aria-modal="true" aria-labelledby="itk-title">
+  <div class="modal">
+    <div class="modal-title" id="itk-title">Create ticket from AI insight</div>
+    <div class="modal-field">
+      <label>Insight summary <span style="font-weight:400;color:var(--text3)">(editable)</span></label>
+      <textarea id="itk-summary" style="min-height:90px;border:1px solid var(--border2);border-radius:var(--radius-sm);padding:8px 10px;font-size:12px;font-family:inherit;color:var(--text);background:var(--surface);width:100%;outline:none;resize:vertical;line-height:1.55" placeholder="Paste or type the specific finding you want to action..."></textarea>
+    </div>
+    <div class="modal-field">
+      <label>Priority</label>
+      <select id="itk-priority" style="border:1px solid var(--border2);border-radius:var(--radius-sm);padding:7px 10px;font-size:12px;font-family:inherit;color:var(--text);background:var(--surface);width:100%;outline:none">
+        <option value="high">🔴 High — needs immediate attention</option>
+        <option value="medium" selected>🟡 Medium — investigate this week</option>
+        <option value="low">🟢 Low — track and monitor</option>
+      </select>
+    </div>
+    <div class="modal-field">
+      <label>Assign to team(s)</label>
+      <div class="team-checks" id="itk-teams">
+        <label class="team-check-item"><input type="checkbox" value="product"><span>Product Dev</span></label>
+        <label class="team-check-item"><input type="checkbox" value="tech"><span>Tech</span></label>
+        <label class="team-check-item"><input type="checkbox" value="marketing"><span>Marketing</span></label>
+        <label class="team-check-item"><input type="checkbox" value="cs"><span>Customer Service</span></label>
+      </div>
+      <div id="itk-team-err" style="color:var(--amber);font-size:11px;margin-top:4px;display:none">Please assign to at least one team.</div>
+    </div>
+    <div class="modal-field">
+      <label>Category</label>
+      <select id="itk-category" style="border:1px solid var(--border2);border-radius:var(--radius-sm);padding:7px 10px;font-size:12px;font-family:inherit;color:var(--text);background:var(--surface);width:100%;outline:none">
+        <option value="product">Product issue</option>
+        <option value="detail">Detail page improvement</option>
+        <option value="packaging">Packaging / instructions</option>
+        <option value="cs">Customer service</option>
+        <option value="positive">Positive insight</option>
+      </select>
+    </div>
+    <div class="modal-field">
+      <label>Source context <span style="font-weight:400;color:var(--text3)">(auto-filled)</span></label>
+      <input id="itk-source" style="border:1px solid var(--border2);border-radius:var(--radius-sm);padding:7px 10px;font-size:12px;font-family:inherit;color:var(--text);background:var(--surface2);width:100%;outline:none" readonly/>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('modal-insight-ticket')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitInsightTicket()">Create ticket</button>
+    </div>
+  </div>
+</div>
+
 <!-- ── TOAST CONTAINER ─────────────────────────────────────────────────────── -->
 <div class="toast-container" id="toast-container" aria-live="polite" aria-atomic="false"></div>
 
@@ -834,24 +917,23 @@ const S = {
   pendingEscalationIds: [],
   issueCounts: [],
   lastImportAt: null,
+  lastInsight: null,
 };
 
-// ── INDEXED DB ────────────────────────────────────────────────────────────────
+// ── INDEXED DB (reviews cache + passwords fallback only) ──────────────────────
 let _db = null;
 
 function openDB() {
   return new Promise((resolve) => {
     if (_db) return resolve(_db);
     try {
-      const req = indexedDB.open('reviewhub_v4', 1);
+      const req = indexedDB.open('reviewhub_v5', 1);
       req.onupgradeneeded = (e) => {
         const db = e.target.result;
-        if (!db.objectStoreNames.contains('kv')) {
-          db.createObjectStore('kv', { keyPath: 'k' });
-        }
+        if (!db.objectStoreNames.contains('kv')) db.createObjectStore('kv', { keyPath: 'k' });
       };
-      req.onsuccess  = (e) => { _db = e.target.result; resolve(_db); };
-      req.onerror    = () => { _db = null; resolve(null); };
+      req.onsuccess = (e) => { _db = e.target.result; resolve(_db); };
+      req.onerror   = () => { _db = null; resolve(null); };
     } catch { resolve(null); }
   });
 }
@@ -861,8 +943,7 @@ async function dbGet(key) {
   if (!db) return null;
   return new Promise((resolve) => {
     try {
-      const tx  = db.transaction('kv', 'readonly');
-      const req = tx.objectStore('kv').get(key);
+      const req = db.transaction('kv', 'readonly').objectStore('kv').get(key);
       req.onsuccess = (e) => resolve(e.target.result ? e.target.result.v : null);
       req.onerror   = () => resolve(null);
     } catch { resolve(null); }
@@ -895,20 +976,215 @@ async function dbDel(key) {
   });
 }
 
+// ── API HELPERS ───────────────────────────────────────────────────────────────
+// All collaborative data (tickets, tags, passwords) goes through the server API.
+// Falls back gracefully when DATABASE_URL is not configured.
+
+let _dbAvailable = null; // null = unknown, true/false after health check
+
+async function checkDBAvailable() {
+  if (_dbAvailable !== null) return _dbAvailable;
+  try {
+    const res  = await fetch('/api/health');
+    const data = await res.json();
+    _dbAvailable = data.db === 'connected';
+  } catch {
+    _dbAvailable = false;
+  }
+  return _dbAvailable;
+}
+
+async function apiGet(path) {
+  const res = await fetch(path, { headers: { 'Content-Type': 'application/json' } });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || `API error ${res.status}`);
+  }
+  return res.json();
+}
+
+async function apiPost(path, body) {
+  const res = await fetch(path, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || `API error ${res.status}`);
+  }
+  return res.json();
+}
+
+async function apiPatch(path, body) {
+  const res = await fetch(path, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || `API error ${res.status}`);
+  }
+  return res.json();
+}
+
+// ── DATA LOADING ──────────────────────────────────────────────────────────────
 async function loadPersistedData() {
-  const [reviews, tickets, passwords, lastImport] = await Promise.all([
-    dbGet('reviews'), dbGet('tickets'), dbGet('passwords'), dbGet('lastImportAt'),
-  ]);
-  if (reviews)    S.reviews      = reviews;
-  if (tickets)    S.tickets      = tickets;
-  if (passwords)  S.passwords    = { ...DEFAULT_PASSWORDS, ...passwords };
-  if (lastImport) S.lastImportAt = lastImport;
+  const dbOk = await checkDBAvailable();
+
+  // 1. Load reviews — from repo JSON (shared), with local cache fallback
+  await loadReviews(dbOk);
+
+  // 2. Load tickets — from DB if available, else empty
+  if (dbOk) {
+    try {
+      S.tickets = await apiGet('/api/tickets');
+    } catch (err) {
+      console.warn('[load] tickets failed:', err.message);
+      S.tickets = [];
+    }
+  } else {
+    S.tickets = [];
+  }
+
+  // 3. Load passwords — from DB if available, else local fallback
+  if (dbOk) {
+    try {
+      S.passwords = await apiGet('/api/passwords');
+    } catch {
+      S.passwords = { ...DEFAULT_PASSWORDS };
+    }
+  } else {
+    const local = await dbGet('passwords');
+    S.passwords = { ...DEFAULT_PASSWORDS, ...(local || {}) };
+  }
+
   computeIssueCounts();
 }
 
-async function persistReviews() { await dbSet('reviews', S.reviews); }
-async function persistTickets() { await dbSet('tickets', S.tickets); }
-async function persistPasswords() { await dbSet('passwords', S.passwords); }
+async function loadReviews(dbOk) {
+  // Step 1: Try the shared repo JSON (source of truth for review content)
+  try {
+    const res = await fetch('/data/reviews.json', { cache: 'no-cache' });
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data) && data.length) {
+        // Step 2: Overlay shared tags/escalations from DB
+        let tagMap = new Map();
+        if (dbOk) {
+          try {
+            const tags = await apiGet('/api/tags');
+            tags.forEach(t => tagMap.set(t.reviewId, t));
+          } catch (err) {
+            console.warn('[load] tags failed:', err.message);
+          }
+        }
+
+        S.reviews = data.map(r => {
+          const t = tagMap.get(r.id);
+          return {
+            ...r,
+            tags:      t ? t.tags      : (r.tags      || []),
+            escalated: t ? t.escalated : (r.escalated || false),
+            ticketId:  t ? t.ticketId  : (r.ticketId  || null),
+          };
+        });
+
+        // Cache locally for offline resilience
+        await dbSet('reviews_cache', S.reviews);
+        await dbSet('reviews_cache_at', Date.now());
+        S.lastImportAt = Date.now();
+        return;
+      }
+    }
+  } catch (err) {
+    console.warn('[load] shared reviews.json failed:', err.message);
+  }
+
+  // Step 3: Fall back to local cache
+  const cached = await dbGet('reviews_cache');
+  if (cached && cached.length) {
+    S.reviews = cached;
+    S.lastImportAt = await dbGet('reviews_cache_at');
+    showToast('Loaded from local cache — shared database unavailable', 'warn');
+  }
+}
+
+// ── PERSIST HELPERS ───────────────────────────────────────────────────────────
+// Tags/escalations: save to DB (shared) with local IndexedDB as fallback
+async function persistTagsForReviews(reviewIds) {
+  const dbOk = await checkDBAvailable();
+  const updates = reviewIds.map(id => {
+    const r = S.reviews.find(x => x.id === id);
+    if (!r) return null;
+    return { reviewId: id, tags: r.tags, escalated: r.escalated, ticketId: r.ticketId, updatedBy: S.user };
+  }).filter(Boolean);
+
+  if (!updates.length) return;
+
+  if (dbOk) {
+    try {
+      await apiPost('/api/tags', { updates });
+    } catch (err) {
+      console.warn('[persist tags] API failed, using local cache:', err.message);
+      await dbSet('reviews_cache', S.reviews);
+    }
+  } else {
+    // No DB — save to local cache so at least this user's session persists
+    await dbSet('reviews_cache', S.reviews);
+  }
+}
+
+// Tickets: always go to DB
+async function persistNewTicket(ticket) {
+  const dbOk = await checkDBAvailable();
+  if (dbOk) {
+    try {
+      await apiPost('/api/tickets', ticket);
+      return true;
+    } catch (err) {
+      console.error('[persist ticket]', err.message);
+      showToast('Could not save ticket to database: ' + err.message, 'err');
+      return false;
+    }
+  } else {
+    showToast('Database not configured — ticket saved locally only', 'warn');
+    return false;
+  }
+}
+
+async function persistTicketUpdate(ticketId, patch) {
+  const dbOk = await checkDBAvailable();
+  if (dbOk) {
+    try {
+      const updated = await apiPatch(`/api/tickets/${ticketId}`, patch);
+      // Sync back into local state
+      const idx = S.tickets.findIndex(t => t.id === ticketId);
+      if (idx !== -1) S.tickets[idx] = updated;
+      return updated;
+    } catch (err) {
+      console.error('[update ticket]', err.message);
+      showToast('Could not update ticket: ' + err.message, 'err');
+    }
+  }
+  return null;
+}
+
+async function persistPasswords() {
+  // passwords are now managed via /api/passwords in updatePassword()
+  // This is a no-op kept for compatibility
+}
+
+// Legacy aliases — kept so existing call sites don't break
+async function persistReviews() {
+  await dbSet('reviews_cache', S.reviews);
+}
+async function persistTickets() {
+  // tickets are persisted individually via persistNewTicket / persistTicketUpdate
+  // This is a no-op
+}
+
 
 // ── STABLE REVIEW ID ──────────────────────────────────────────────────────────
 // Hash of SKU + author + date + first 40 chars of title
@@ -946,16 +1222,27 @@ document.getElementById('inp-pw').addEventListener('keydown', (e) => {
 });
 
 async function attemptLogin() {
-  const role = document.getElementById('inp-role').value.trim();
-  const pw   = document.getElementById('inp-pw').value;
+  const role  = document.getElementById('inp-role').value.trim();
+  const pw    = document.getElementById('inp-pw').value;
   const errEl = document.getElementById('login-err');
   errEl.classList.remove('on');
 
   if (!role) { showLoginError('Please select your team.'); return; }
 
-  // Load passwords from DB first so we pick up any admin changes
-  const storedPw = await dbGet('passwords');
-  const passwords = { ...DEFAULT_PASSWORDS, ...(storedPw || {}) };
+  // Try server DB first, fall back to local cache
+  let passwords = { ...DEFAULT_PASSWORDS };
+  try {
+    const dbOk = await checkDBAvailable();
+    if (dbOk) {
+      passwords = await apiGet('/api/passwords');
+    } else {
+      const local = await dbGet('passwords');
+      if (local) passwords = { ...DEFAULT_PASSWORDS, ...local };
+    }
+  } catch {
+    const local = await dbGet('passwords');
+    if (local) passwords = { ...DEFAULT_PASSWORDS, ...local };
+  }
 
   if (pw !== passwords[role]) {
     showLoginError('Incorrect password. Please try again.');
@@ -1021,19 +1308,18 @@ function refreshBadges() {
 
 async function checkServerHealth() {
   try {
-    const res = await fetch('/api/health');
+    const res  = await fetch('/api/health');
     if (!res.ok) return;
     const data = await res.json();
+    _dbAvailable = data.db === 'connected';
+
     const aiStatus    = _id('status-ai');
     const slackStatus = _id('status-slack');
-    if (aiStatus) {
-      aiStatus.textContent  = data.ai    ? 'Connected' : 'Not configured';
-      aiStatus.className    = 'settings-status ' + (data.ai    ? 'status-ok' : 'status-missing');
-    }
-    if (slackStatus) {
-      slackStatus.textContent = data.slack  ? 'Connected' : 'Not configured';
-      slackStatus.className   = 'settings-status ' + (data.slack ? 'status-ok' : 'status-missing');
-    }
+    const dbStatus    = _id('status-db');
+
+    if (aiStatus)    { aiStatus.textContent    = data.ai    ? 'Connected' : 'Not configured'; aiStatus.className    = 'settings-status ' + (data.ai    ? 'status-ok' : 'status-missing'); }
+    if (slackStatus) { slackStatus.textContent = data.slack ? 'Connected' : 'Not configured'; slackStatus.className = 'settings-status ' + (data.slack ? 'status-ok' : 'status-missing'); }
+    if (dbStatus)    { dbStatus.textContent    = data.db === 'connected' ? 'Connected' : data.db === 'not configured' ? 'Not configured' : 'Error'; dbStatus.className = 'settings-status ' + (data.db === 'connected' ? 'status-ok' : 'status-missing'); }
   } catch { /* server may not be running during local dev */ }
 }
 
@@ -1411,11 +1697,12 @@ function bulkTag(cat) {
   const ids = [...S.selected];
   if (!ids.length) return;
   let n = 0;
+  const changed = [];
   ids.forEach(id => {
     const r = S.reviews.find(x => x.id === id);
-    if (r && !r.tags.includes(cat)) { r.tags.push(cat); n++; }
+    if (r && !r.tags.includes(cat)) { r.tags.push(cat); n++; changed.push(id); }
   });
-  persistReviews();
+  persistTagsForReviews(changed);
   clearSelection();
   renderReviews();
   showToast(`Tagged ${n} review${n!==1?'s':''} as "${TAG_LABELS[cat] || cat}"`, 'ok');
@@ -1569,14 +1856,17 @@ async function submitEscalation() {
   const notes    = _id('esc-notes').value.trim();
   const teams    = [...document.querySelectorAll('#team-checkboxes input:checked')].map(c => c.value);
 
-  // Validation
   if (teams.length === 0) {
     _id('team-validation-msg').style.display = 'block';
     return;
   }
   _id('team-validation-msg').style.display = 'none';
 
-  let firstReview = null;
+  const now = Date.now();
+  let firstReview  = null;
+  const changedIds = [];
+  const newTickets = [];
+
   S.pendingEscalationIds.forEach(id => {
     const r = S.reviews.find(x => x.id === id);
     if (!r) return;
@@ -1585,37 +1875,39 @@ async function submitEscalation() {
     r.escalated = true;
     if (!r.tags.includes('escalated')) r.tags.push('escalated');
     if (!r.tags.includes(category))    r.tags.push(category);
+    changedIds.push(id);
 
-    // Only create a ticket if one doesn't already exist
     if (!r.ticketId) {
       const ticket = {
-        id:          'TK_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+        id:          'TK_' + now + '_' + Math.random().toString(36).slice(2, 7),
         reviewId:    r.id,
         reviewTitle: r.title || '(no title)',
         sku:         r.sku,
-        priority,
-        category,
-        notes,
-        teams,
-        status:      'open',
-        createdAt:   Date.now(),
-        createdBy:   S.user,
-        comments:    [],
-        auditLog:    [{ action: 'created', by: S.user, at: Date.now() }],
+        priority, category, notes, teams,
+        status:    'open',
+        createdAt: now,
+        createdBy: S.user,
+        comments:  [],
+        auditLog:  [{ action: 'created', by: S.user, at: now }],
       };
       r.ticketId = ticket.id;
       S.tickets.push(ticket);
+      newTickets.push(ticket);
     }
   });
 
-  await Promise.all([persistReviews(), persistTickets()]);
+  // Persist to DB in parallel — tags shared, tickets shared
+  await Promise.all([
+    persistTagsForReviews(changedIds),
+    ...newTickets.map(t => persistNewTicket(t)),
+  ]);
 
-  // Send Slack notification
+  // Send Slack
   if (firstReview) {
     const emojis  = { high: '🔴', medium: '🟡', low: '🟢' };
     const starStr = '★'.repeat(Math.round(firstReview.rating)) + '☆'.repeat(5 - Math.round(firstReview.rating));
     const multi   = S.pendingEscalationIds.length > 1 ? ` (+${S.pendingEscalationIds.length - 1} more)` : '';
-    const blocks = [
+    const blocks  = [
       { type: 'header', text: { type: 'plain_text', text: `${emojis[priority] || '⚪'} Review escalated — ${priority.toUpperCase()}${multi}` } },
       { type: 'section', fields: [
         { type: 'mrkdwn', text: `*SKU:*\n${firstReview.sku}` },
@@ -1627,7 +1919,6 @@ async function submitEscalation() {
       ...(notes ? [{ type: 'section', text: { type: 'mrkdwn', text: `*Notes:* ${notes}` } }] : []),
       ...(firstReview.url && firstReview.url !== '-' ? [{ type: 'actions', elements: [{ type: 'button', text: { type: 'plain_text', text: 'View on Amazon' }, url: firstReview.url }] }] : []),
     ];
-
     sendSlack({ blocks, text: `Review escalated — ${priority.toUpperCase()}` }).catch(() => {});
   }
 
@@ -1637,11 +1928,7 @@ async function submitEscalation() {
   renderDashboard();
   computeIssueCounts();
   if (_id('page-reviews').classList.contains('active')) renderReviews();
-
-  showToast(
-    `${S.pendingEscalationIds.length} review${S.pendingEscalationIds.length !== 1 ? 's' : ''} escalated`,
-    'ok'
-  );
+  showToast(`${S.pendingEscalationIds.length} review${S.pendingEscalationIds.length !== 1 ? 's' : ''} escalated`, 'ok');
 }
 
 // ── TICKETS ───────────────────────────────────────────────────────────────────
@@ -1700,7 +1987,9 @@ function buildTicketRow(t) {
   return `<div class="ticket-row" role="listitem">
     <div class="ticket-priority ${prioClass}" title="${t.priority} priority"></div>
     <div class="ticket-body">
-      <div class="ticket-title" onclick="openReviewDetail('${t.reviewId}')" title="Click to view original review">${xe(t.reviewTitle)}</div>
+      <div class="ticket-title" 
+        ${t.reviewId ? `onclick="openReviewDetail('${t.reviewId}')" title="Click to view original review" style="cursor:pointer"` : `style="cursor:default"`}
+      >${xe(t.reviewTitle)}${t.isInsightTicket ? ' <span style="font-size:9px;padding:2px 6px;background:var(--purple-bg);color:var(--purple);border-radius:10px;font-weight:600;vertical-align:middle">AI Insight</span>' : ''}</div>
       <div class="ticket-meta">${xe(t.sku)} · ${TAG_LABELS[t.category] || t.category} · ${timeAgo(t.createdAt)} · by ${xe(ROLES[t.createdBy]?.label || t.createdBy || 'System')}</div>
       ${t.notes ? `<div class="ticket-notes">${xe(t.notes)}</div>` : ''}
       <div class="ticket-teams badge-row">${teamBadges}</div>
@@ -1728,36 +2017,40 @@ async function addTicketComment(ticketId) {
   const inp = _id(`comment-${ticketId}`);
   if (!inp || !inp.value.trim()) return;
 
-  const t = S.tickets.find(x => x.id === ticketId);
-  if (!t) return;
-
-  if (!t.comments) t.comments = [];
-  t.comments.push({ user: ROLES[S.user]?.label || S.user, text: inp.value.trim(), at: Date.now() });
-  if (!t.auditLog) t.auditLog = [];
-  t.auditLog.push({ action: 'comment', by: S.user, at: Date.now() });
-
-  await persistTickets();
+  const text = inp.value.trim();
   inp.value = '';
+
+  // Optimistic local update
+  const t = S.tickets.find(x => x.id === ticketId);
+  if (t) {
+    if (!t.comments) t.comments = [];
+    t.comments.push({ user: ROLES[S.user]?.label || S.user, text, at: Date.now() });
+  }
   renderTickets();
-  showToast('Comment added', 'ok');
+
+  // Persist to DB
+  try {
+    await persistTicketUpdate(ticketId, { comment: text, commentUser: ROLES[S.user]?.label || S.user });
+    showToast('Comment added', 'ok');
+  } catch (err) {
+    showToast('Comment saved locally — DB sync failed', 'warn');
+  }
 }
 
 async function updateTicketStatus(id, status) {
+  // Optimistic local update
   const t = S.tickets.find(x => x.id === id);
-  if (!t) return;
-
-  const prev = t.status;
-  t.status = status;
-  if (!t.auditLog) t.auditLog = [];
-  t.auditLog.push({ action: `status: ${prev} → ${status}`, by: S.user, at: Date.now() });
-
-  await persistTickets();
+  if (t) t.status = status;
   refreshBadges();
   renderTickets();
   renderDashboard();
 
-  if (status === 'resolved') {
-    showToast('Ticket resolved ✓', 'ok');
+  // Persist to DB
+  try {
+    await persistTicketUpdate(id, { status, commentUser: S.user });
+    if (status === 'resolved') showToast('Ticket resolved ✓', 'ok');
+  } catch (err) {
+    showToast('Status updated locally — DB sync failed', 'warn');
   }
 }
 
@@ -1777,6 +2070,12 @@ async function runInsights() {
   const rating = _id('ai-filter-rating').value;
   const btn    = _id('ai-run-btn');
   const out    = _id('ai-output');
+
+  // Hide action buttons while running
+  const exportBtn = _id('ai-export-btn');
+  const ticketBtn = _id('ai-ticket-btn');
+  if (exportBtn) exportBtn.style.display = 'none';
+  if (ticketBtn) ticketBtn.style.display = 'none';
 
   // Filter reviews
   let subset = S.reviews.filter(r => {
@@ -1833,6 +2132,18 @@ ${reviewText}`;
 
   try {
     const text = await callAI({ prompt, maxTokens: 1500 });
+
+    // Store for export and ticket creation
+    S.lastInsight = {
+      text,
+      sku: sku || 'All products',
+      focus,
+      rating,
+      reviewCount: sample.length,
+      totalCount: subset.length,
+      generatedAt: new Date().toLocaleString(),
+    };
+
     const html = xe(text)
       .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
       .replace(/\n\n/g, '</p><p style="margin-top:10px">')
@@ -1845,6 +2156,11 @@ ${reviewText}`;
         ${sku ? `SKU: ${xe(sku)} · ` : ''}
         Generated ${new Date().toLocaleString()}
       </div>`;
+
+    // Show action buttons now that we have a result
+    if (exportBtn) exportBtn.style.display = 'inline-flex';
+    if (ticketBtn) ticketBtn.style.display = 'inline-flex';
+
   } catch (err) {
     out.innerHTML = `
       <div style="background:var(--red-bg);border:1px solid var(--red-bd);border-radius:var(--radius-sm);padding:14px;font-size:12px;color:var(--red)">
@@ -1854,6 +2170,114 @@ ${reviewText}`;
 
   btn.disabled    = false;
   btn.textContent = 'Generate insights ✦';
+}
+
+// ── INSIGHT EXPORT ────────────────────────────────────────────────────────────
+function exportInsights() {
+  if (!S.lastInsight) { showToast('No insight to export — run an analysis first', 'warn'); return; }
+  const ins = S.lastInsight;
+
+  const header = [
+    '='.repeat(60),
+    'REVIEWHUB — AI INSIGHT REPORT',
+    'Cuckoo Electronics America',
+    '='.repeat(60),
+    '',
+    `Product:       ${ins.sku}`,
+    `Focus area:    ${ins.focus === 'all' ? 'All improvement areas' : ins.focus}`,
+    `Rating filter: ${ins.rating === 'all' ? 'All ratings' : ins.rating}`,
+    `Reviews analyzed: ${ins.reviewCount}${ins.totalCount > ins.reviewCount ? ` (of ${ins.totalCount} total)` : ''}`,
+    `Generated:     ${ins.generatedAt}`,
+    '',
+    '='.repeat(60),
+    '',
+  ].join('\n');
+
+  const content = header + ins.text;
+  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `cuckoo-insight-${ins.sku.toLowerCase().replace(/\s+/g,'-')}-${new Date().toISOString().slice(0,10)}.txt`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('Insight exported as .txt', 'ok');
+}
+
+// ── INSIGHT TICKET ────────────────────────────────────────────────────────────
+function openInsightTicket() {
+  if (!S.lastInsight) { showToast('Run an analysis first', 'warn'); return; }
+  const ins = S.lastInsight;
+
+  // Pre-fill summary with the full insight text (user can trim it down)
+  _id('itk-summary').value   = ins.text;
+  _id('itk-priority').value  = 'medium';
+  _id('itk-category').value  = ins.focus !== 'all' ? ins.focus : 'product';
+  _id('itk-source').value    = `AI Insight · ${ins.sku} · ${ins.reviewCount} reviews · ${ins.generatedAt}`;
+  _id('itk-team-err').style.display = 'none';
+
+  // Pre-check teams based on focus area
+  const focusTeamMap = { detail: 'marketing', product: 'product', packaging: 'product', cs: 'cs' };
+  document.querySelectorAll('#itk-teams input[type=checkbox]').forEach(c => {
+    c.checked = c.value === (focusTeamMap[ins.focus] || 'product');
+  });
+
+  openModal('modal-insight-ticket');
+}
+
+async function submitInsightTicket() {
+  const summary  = _id('itk-summary').value.trim();
+  const priority = _id('itk-priority').value;
+  const category = _id('itk-category').value;
+  const source   = _id('itk-source').value;
+  const teams    = [...document.querySelectorAll('#itk-teams input:checked')].map(c => c.value);
+
+  if (!summary)        { showToast('Please enter an insight summary', 'warn'); return; }
+  if (!teams.length)   { _id('itk-team-err').style.display = 'block'; return; }
+  _id('itk-team-err').style.display = 'none';
+
+  const ticket = {
+    id:          'TK_INS_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+    reviewId:    null,
+    reviewTitle: 'AI Insight: ' + summary.slice(0, 80) + (summary.length > 80 ? '…' : ''),
+    sku:         S.lastInsight?.sku || 'Multiple',
+    priority,
+    category,
+    notes:       `${summary}\n\n— Source: ${source}`,
+    teams,
+    status:      'open',
+    createdAt:   Date.now(),
+    createdBy:   S.user,
+    isInsightTicket: true,
+    comments:    [],
+    auditLog:    [{ action: 'created from AI insight', by: S.user, at: Date.now() }],
+  };
+
+  S.tickets.push(ticket);
+  await persistNewTicket(ticket);
+  refreshBadges();
+
+  // Send Slack if configured
+  const emojis = { high: '🔴', medium: '🟡', low: '🟢' };
+  sendSlack({
+    text: `${emojis[priority] || '⚪'} New ticket from AI Insight — ${priority.toUpperCase()}`,
+    blocks: [
+      { type: 'header', text: { type: 'plain_text', text: `${emojis[priority] || '⚪'} AI Insight ticket — ${priority.toUpperCase()}` } },
+      { type: 'section', fields: [
+        { type: 'mrkdwn', text: `*SKU/Product:*\n${ticket.sku}` },
+        { type: 'mrkdwn', text: `*Category:*\n${TAG_LABELS[category] || category}` },
+        { type: 'mrkdwn', text: `*Assigned to:*\n${teams.map(t => ROLES[t]?.label || t).join(', ')}` },
+        { type: 'mrkdwn', text: `*Source:*\n${source}` },
+      ]},
+      { type: 'section', text: { type: 'mrkdwn', text: summary.slice(0, 400) + (summary.length > 400 ? '…' : '') } },
+    ],
+  }).catch(() => {});
+
+  closeModal('modal-insight-ticket');
+  showToast('Ticket created from AI insight', 'ok');
+
+  // Navigate to tickets so they can see it
+  goPage('tickets', _id('nav-tickets'));
 }
 
 // ── API CALLS (via server proxy) ──────────────────────────────────────────────
@@ -2038,7 +2462,52 @@ function handleExport() {
   showToast(`Exported ${toExport.length.toLocaleString()} reviews`, 'ok');
 }
 
-// ── ADD REVIEW FORM ───────────────────────────────────────────────────────────
+// ── EXPORT FOR REPO (shared database) ────────────────────────────────────────
+// Exports reviews as reviews.json to be committed to public/data/reviews.json
+// All users will load this file automatically on login if they have no local data.
+function exportForRepo() {
+  if (!S.reviews.length) {
+    showToast('No reviews to export — import an .xlsx first', 'warn');
+    return;
+  }
+
+  // Strip local-only fields (tags, escalated, ticketId) so the shared file
+  // is a clean baseline. Each user's browser preserves their own tags locally.
+  const clean = S.reviews
+    .filter(r => !r.manual) // exclude manually-added reviews (those are personal)
+    .map(r => ({
+      id:        r.id,
+      sku:       r.sku,
+      date:      r.date,
+      ts:        r.ts,
+      author:    r.author,
+      rating:    r.rating,
+      title:     r.title,
+      body:      r.body,
+      verified:  r.verified,
+      url:       r.url,
+      variation: r.variation,
+      style:     r.style,
+      tags:      [],
+      escalated: false,
+      ticketId:  null,
+    }));
+
+  const payload = clean; // plain array — app handles it directly
+  const json    = JSON.stringify(payload, null, 2);
+  const blob    = new Blob([json], { type: 'application/json' });
+  const url     = URL.createObjectURL(blob);
+  const a       = document.createElement('a');
+  a.href        = url;
+  a.download    = 'reviews.json';
+  a.click();
+  URL.revokeObjectURL(url);
+
+  const statusEl = _id('export-repo-status');
+  if (statusEl) statusEl.textContent = `✓ ${clean.length.toLocaleString()} reviews exported — commit to public/data/reviews.json`;
+  showToast(`Exported ${clean.length.toLocaleString()} reviews as reviews.json`, 'ok');
+}
+
 function initAddForm() {
   if (!_id('add-date').value) {
     _id('add-date').value = new Date().toISOString().split('T')[0];
@@ -2134,9 +2603,19 @@ async function updatePassword(role, val) {
     showToast('Password must be at least 4 characters', 'warn');
     return;
   }
-  S.passwords[role] = val;
-  await persistPasswords();
-  showToast(`Password updated for ${ROLES[role]?.label || role}`, 'ok');
+  try {
+    const dbOk = await checkDBAvailable();
+    if (dbOk) {
+      await apiPost('/api/passwords', { role, password: val });
+    } else {
+      // Fallback: save locally
+      S.passwords[role] = val;
+      await dbSet('passwords', S.passwords);
+    }
+    showToast(`Password updated for ${ROLES[role]?.label || role}`, 'ok');
+  } catch (err) {
+    showToast('Failed to update password: ' + err.message, 'err');
+  }
 }
 
 async function confirmClearAll() {
