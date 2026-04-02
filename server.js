@@ -323,8 +323,8 @@ app.delete('/api/tickets/:id', requireDB, rateLimit(60_000, 30), async (req, res
 app.get('/api/passwords', requireDB, async (req, res) => {
   try {
     const result = await query("SELECT value FROM app_settings WHERE key = 'passwords'");
-    const defaults = { admin:'admin123', marketing:'mkt123', product:'prod123', tech:'tech123', cs:'cs123' };
-    res.json(result.rows.length ? result.rows[0].value : defaults);
+    const defaults = { admin:'admin123', marketing:'mkt123', product:'prod123', tech:'tech123', cs:'cs123', ops:'ops123' };
+    res.json(result.rows.length ? { ...defaults, ...result.rows[0].value } : defaults);
   } catch (err) {
     console.error('[GET /api/passwords]', err.message);
     res.status(500).json({ error: 'Failed to load passwords.' });
@@ -341,7 +341,7 @@ app.put('/api/passwords', requireDB, rateLimit(60_000, 20), async (req, res) => 
   try {
     // Fetch current, merge, upsert
     const current = await query("SELECT value FROM app_settings WHERE key = 'passwords'");
-    const defaults = { admin:'admin123', marketing:'mkt123', product:'prod123', tech:'tech123', cs:'cs123' };
+    const defaults = { admin:'admin123', marketing:'mkt123', product:'prod123', tech:'tech123', cs:'cs123', ops:'ops123' };
     const pw = current.rows.length ? current.rows[0].value : defaults;
     pw[role] = password;
 
