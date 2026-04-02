@@ -369,6 +369,7 @@ label{font-size:11px;font-weight:600;color:var(--text2);display:block;margin-bot
         <option value="product">Product Dev</option>
         <option value="tech">Tech</option>
         <option value="cs">Customer Service</option>
+        <option value="ops">Operations</option>
       </select>
     </div>
     <div class="lfield">
@@ -382,7 +383,7 @@ label{font-size:11px;font-weight:600;color:var(--text2);display:block;margin-bot
     </div>
     <div class="hint">
       Default passwords — Admin: <strong>admin123</strong> · Marketing: <strong>mkt123</strong><br>
-      Product Dev: <strong>prod123</strong> · Tech: <strong>tech123</strong> · CS: <strong>cs123</strong><br>
+      Product Dev: <strong>prod123</strong> · Tech: <strong>tech123</strong> · CS: <strong>cs123</strong> · Operations: <strong>ops123</strong><br>
       Change passwords in Settings after logging in as Admin.
     </div>
   </div>
@@ -542,6 +543,7 @@ label{font-size:11px;font-weight:600;color:var(--text2);display:block;margin-bot
               <option value="tech">Tech</option>
               <option value="marketing">Marketing</option>
               <option value="cs">Customer Service</option>
+              <option value="ops">Operations</option>
             </select>
             <select class="filter-chip" id="tk-filter-priority" onchange="renderTickets()" style="border-radius:14px;cursor:pointer;padding:3px 9px">
               <option value="">All priorities</option>
@@ -773,6 +775,7 @@ label{font-size:11px;font-weight:600;color:var(--text2);display:block;margin-bot
         <label class="team-check-item"><input type="checkbox" value="tech" onchange="updateSlackPreview()"><span>Tech</span></label>
         <label class="team-check-item"><input type="checkbox" value="marketing" onchange="updateSlackPreview()"><span>Marketing</span></label>
         <label class="team-check-item"><input type="checkbox" value="cs" onchange="updateSlackPreview()"><span>Customer Service</span></label>
+        <label class="team-check-item"><input type="checkbox" value="ops" onchange="updateSlackPreview()"><span>Operations</span></label>
       </div>
       <div id="team-validation-msg" style="color:var(--amber);font-size:11px;margin-top:4px;display:none">Please assign to at least one team.</div>
     </div>
@@ -847,6 +850,7 @@ label{font-size:11px;font-weight:600;color:var(--text2);display:block;margin-bot
         <label class="team-check-item"><input type="checkbox" value="tech"><span>Tech</span></label>
         <label class="team-check-item"><input type="checkbox" value="marketing"><span>Marketing</span></label>
         <label class="team-check-item"><input type="checkbox" value="cs"><span>Customer Service</span></label>
+        <label class="team-check-item"><input type="checkbox" value="ops"><span>Operations</span></label>
       </div>
       <div id="itk-team-err" style="color:var(--amber);font-size:11px;margin-top:4px;display:none">Please assign to at least one team.</div>
     </div>
@@ -885,9 +889,10 @@ const ROLES = {
   product:   { label: 'Product Dev',      access: 'Product access',    color: ['var(--green-bg)',  'var(--green)']  },
   tech:      { label: 'Tech',             access: 'Tech access',       color: ['var(--blue-bg)',   'var(--blue)']   },
   cs:        { label: 'Customer Service', access: 'CS access',         color: ['var(--amber-bg)',  'var(--amber)']  },
+  ops:       { label: 'Operations',       access: 'Operations access', color: ['var(--green-bg)',  'var(--green)']  },
 };
 
-const DEFAULT_PASSWORDS = { admin:'admin123', marketing:'mkt123', product:'prod123', tech:'tech123', cs:'cs123' };
+const DEFAULT_PASSWORDS = { admin:'admin123', marketing:'mkt123', product:'prod123', tech:'tech123', cs:'cs123', ops:'ops123' };
 
 const PAGE_SIZE = 50;
 
