@@ -2480,27 +2480,73 @@ function processXLSX(file) {
         }
       }
 
-      // Dedupe. Exact ID collisions first, then a fuzzy pass to catch the same
-      // review appearing in both a legacy tab and its NEW tab (their date strings
-      // differ, so the hash IDs differ — match on sku + author + title instead).
+      // Dedupe in three passes:
+      // 1. Exact ID collisions.
+      // 2. Fuzzy: sku + author + title — catches most legacy-tab vs NEW-tab repeats.
+      // 3. Body-based: sku + normalized body prefix — catches the rest, where the two
+      //    scrapes differ in whitespace, emoji encoding, or author name formatting.
       const byId = new Map();
       for (const r of imported) {
         const prev = byId.get(r.id);
         if (!prev || (r.body.length > prev.body.length)) byId.set(r.id, r);
       }
-      const byFuzzy = new Map();
-      for (const r of byId.values()) {
-        const key = `${r.sku}|${r.author.toLowerCase()}|${r.title.toLowerCase().slice(0, 40)}`;
-        const prev = byFuzzy.get(key);
-        if (!prev) { byFuzzy.set(key, r); continue; }
-        // Keep the richer record; carry over any tags/escalation from the loser
-        const keep  = (r.body.length > prev.body.length || (!prev.ts && r.ts)) ? r : prev;
-        const lose  = keep === r ? prev : r;
+      const mergeInto = (map, key, r) => {
+        const prev = map.get(key);
+        if (!prev) { map.set(key, r); return; }
+        const keep = (r.body.length > prev.body.length || (!prev.ts && r.ts)) ? r : prev;
+        const lose = keep === r ? prev : r;
         if (lose.escalated && !keep.escalated) { keep.escalated = true; keep.ticketId = keep.ticketId || lose.ticketId; }
         keep.tags = [...new Set([...keep.tags, ...lose.tags])];
-        byFuzzy.set(key, keep);
+        map.set(key, keep);
+      };
+      const normBody = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, ' ').replace(/\s+/g, ' ').trim();
+
+      const byFuzzy = new Map();
+      for (const r of byId.values()) {
+        mergeInto(byFuzzy, `${r.sku}|${r.author.toLowerCase()}|${r.title.toLowerCase().slice(0, 40)}`, r);
       }
-      const deduped = [...byFuzzy.values()];
+      const byBody = new Map();
+      const shortBody = [];
+      for (const r of byFuzzy.values()) {
+        const nb = normBody(r.body);
+        // Only body-dedupe substantial bodies — short generic ones ("great") would false-merge
+        if (nb.length >= 30) mergeInto(byBody, `${r.sku}|${nb.slice(0, 60)}`, r);
+        else shortBody.push(r);
+      }
+      const preFinal = [...byBody.values(), ...shortBody];
+
+      // 4. Same author + SKU + day with heavily overlapping text — catches edited
+      //    reviews that the scrape captured twice with slightly reworded wording.
+      const tokens = (s) => new Set(normBody(s).split(' ').filter(w => w.length > 3));
+      const byDay = new Map();
+      for (const r of preFinal) {
+        const k = `${r.sku}|${r.author.toLowerCase()}|${r.ts || 'x'}`;
+        if (!byDay.has(k)) byDay.set(k, []);
+        byDay.get(k).push(r);
+      }
+      const deduped = [];
+      for (const group of byDay.values()) {
+        if (group.length === 1 || !group[0].ts || ['amazon customer','anonymous'].includes(group[0].author.toLowerCase())) {
+          deduped.push(...group);
+          continue;
+        }
+        const kept = [];
+        for (const r of group) {
+          const rT = tokens(r.body);
+          const match = kept.find(k2 => {
+            const kT = tokens(k2.body);
+            const inter = [...rT].filter(x => kT.has(x)).length;
+            return inter / Math.max(1, Math.min(rT.size, kT.size)) > 0.5;
+          });
+          if (match) {
+            // Reworded re-submission — keep the longer body, carry over tags/escalation
+            if (r.body.length > match.body.length) { match.body = r.body; match.title = r.title || match.title; }
+            if (r.escalated && !match.escalated) { match.escalated = true; match.ticketId = match.ticketId || r.ticketId; }
+            match.tags = [...new Set([...match.tags, ...r.tags])];
+          } else kept.push(r);
+        }
+        deduped.push(...kept);
+      }
       const dupesRemoved = imported.length - deduped.length;
 
       // Merge: deduped imports + preserved manual entries
