@@ -1,0 +1,2843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>ReviewHub — Cuckoo Electronics</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"
+        integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<style>
+/* ── RESET & TOKENS ───────────────────────────────────────────────────────── */
+*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+:root{
+  --brand:#C8382B;--brand-d:#993C1D;--brand-l:#FAECE7;--brand-ll:#FEF5F4;
+  --bg:#F7F6F3;--surface:#fff;--surface2:#F1F0EC;--surface3:#E8E6E0;
+  --border:#E5E3DC;--border2:#D0CEC6;--border3:#B8B5AE;
+  --text:#1A1A18;--text2:#6B6963;--text3:#A09D97;--text4:#C4C1BB;
+  --green:#3B6D11;--green-bg:#EAF3DE;--green-bd:#C0DD97;
+  --amber:#BA7517;--amber-bg:#FAEEDA;--amber-bd:#FAC775;
+  --red:#A32D2D;--red-bg:#FCEBEB;--red-bd:#F7C1C1;
+  --blue:#185FA5;--blue-bg:#E6F1FB;--blue-bd:#B5D4F4;
+  --purple:#3C3489;--purple-bg:#EEEDFE;--purple-bd:#CECBF6;
+  --radius:8px;--radius-sm:5px;--radius-lg:12px;
+  --shadow:0 1px 3px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.05);
+  --shadow-md:0 4px 12px rgba(0,0,0,.1),0 2px 4px rgba(0,0,0,.06);
+}
+
+/* ── BASE ─────────────────────────────────────────────────────────────────── */
+body{background:var(--bg);color:var(--text);font-size:13px;line-height:1.5;height:100vh;overflow:hidden}
+a{color:var(--blue);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* ── INPUTS ───────────────────────────────────────────────────────────────── */
+input,select,textarea{
+  font-family:inherit;font-size:13px;color:var(--text);
+  background:var(--surface);border:1px solid var(--border2);
+  border-radius:var(--radius-sm);padding:7px 10px;outline:none;width:100%
+}
+input:focus,select:focus,textarea:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(200,56,43,.1)}
+input::placeholder,textarea::placeholder{color:var(--text4)}
+textarea{resize:vertical;line-height:1.6}
+input[type=checkbox]{width:auto;cursor:pointer}
+input[type=date]{cursor:pointer}
+label{font-size:11px;font-weight:600;color:var(--text2);display:block;margin-bottom:5px}
+
+/* ── BUTTONS ──────────────────────────────────────────────────────────────── */
+.btn{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:6px 12px;border-radius:var(--radius-sm);
+  border:1px solid var(--border2);background:var(--surface);
+  font-size:12px;font-family:inherit;color:var(--text);
+  cursor:pointer;white-space:nowrap;width:auto;
+  transition:background .12s,border-color .12s,box-shadow .12s;
+  user-select:none
+}
+.btn:hover{background:var(--surface2);border-color:var(--border3)}
+.btn:active{transform:scale(.98)}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn svg{width:13px;height:13px;flex-shrink:0}
+.btn-primary{background:var(--brand);color:#fff;border-color:var(--brand)}
+.btn-primary:hover{background:var(--brand-d);border-color:var(--brand-d)}
+.btn-danger{background:var(--red-bg);color:var(--red);border-color:var(--red-bd)}
+.btn-danger:hover{background:var(--red-bd)}
+.btn-info{background:var(--blue-bg);color:var(--blue);border-color:var(--blue-bd)}
+.btn-info:hover{background:var(--blue-bd)}
+.btn-sm{padding:3px 8px;font-size:11px}
+.btn-icon{padding:5px 6px;border-radius:var(--radius-sm)}
+
+/* ── LOGIN ────────────────────────────────────────────────────────────────── */
+#login{display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--bg)}
+.lcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:36px;width:360px;box-shadow:var(--shadow-md)}
+.logo{display:flex;align-items:center;gap:10px;margin-bottom:28px}
+.logo-icon{width:38px;height:38px;background:var(--brand);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 8px rgba(200,56,43,.3)}
+.logo-icon svg{width:22px;height:22px;fill:#fff}
+.logo-name{font-size:17px;font-weight:700;letter-spacing:-.3px}
+.logo-sub{font-size:11px;color:var(--text3);margin-top:1px}
+.lfield{margin-bottom:16px}
+.lbtn{width:100%;background:var(--brand);color:#fff;border:none;border-radius:var(--radius-sm);padding:11px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .12s;margin-top:4px;letter-spacing:.01em}
+.lbtn:hover{background:var(--brand-d)}
+.lbtn:active{transform:scale(.99)}
+.lerr{background:var(--red-bg);color:var(--red);border:1px solid var(--red-bd);border-radius:var(--radius-sm);padding:9px 12px;font-size:12px;margin-top:12px;display:none;align-items:center;gap:8px}
+.lerr.on{display:flex}
+.hint{margin-top:16px;padding-top:14px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);line-height:1.85}
+
+/* ── APP SHELL ────────────────────────────────────────────────────────────── */
+#app{display:none;height:100vh;overflow:hidden}
+.layout{display:flex;height:100vh}
+
+/* ── SIDEBAR ──────────────────────────────────────────────────────────────── */
+.sb{width:210px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+.sb-brand{padding:16px 14px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:9px}
+.sb-icon{width:30px;height:30px;background:var(--brand);border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sb-icon svg{width:16px;height:16px;fill:#fff}
+.sb-name{font-size:13px;font-weight:700;letter-spacing:-.2px}
+.sb-sub{font-size:10px;color:var(--text3);margin-top:1px}
+.sb-section{padding:10px 6px 2px}
+.sb-section-label{font-size:9px;font-weight:700;color:var(--text3);letter-spacing:.07em;text-transform:uppercase;padding:0 7px;margin-bottom:3px}
+.nav-item{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:var(--radius-sm);cursor:pointer;font-size:12px;color:var(--text2);margin-bottom:1px;user-select:none;transition:background .1s}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:var(--brand-l);color:var(--brand-d);font-weight:600}
+.nav-item svg{width:14px;height:14px;flex-shrink:0;opacity:.65}
+.nav-item.active svg{opacity:1}
+.nav-badge{margin-left:auto;background:var(--brand);color:#fff;font-size:9px;font-weight:700;padding:1px 6px;border-radius:10px;min-width:18px;text-align:center}
+.nav-badge.amber{background:var(--amber)}
+.sb-footer{margin-top:auto;padding:12px;border-top:1px solid var(--border)}
+.user-row{display:flex;align-items:center;gap:8px}
+.user-av{width:28px;height:28px;border-radius:50%;background:var(--purple-bg);color:var(--purple);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;border:1px solid var(--purple-bd)}
+.user-name{font-size:12px;font-weight:600;color:var(--text)}
+.user-role{font-size:10px;color:var(--text3)}
+.sb-logout{margin-left:auto;background:none;border:none;cursor:pointer;color:var(--text3);font-size:10px;padding:3px 6px;border-radius:4px;font-family:inherit;transition:background .1s;white-space:nowrap}
+.sb-logout:hover{background:var(--surface2);color:var(--text)}
+
+/* ── TOPBAR ───────────────────────────────────────────────────────────────── */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.topbar-title{font-size:15px;font-weight:700;letter-spacing:-.2px}
+.topbar-sep{width:1px;height:16px;background:var(--border)}
+.topbar-sub{font-size:12px;color:var(--text2)}
+.topbar-right{margin-left:auto;display:flex;gap:8px;align-items:center}
+
+/* ── CONTENT ──────────────────────────────────────────────────────────────── */
+.content{flex:1;overflow-y:auto;padding:18px}
+.page{display:none}
+.page.active{display:block}
+
+/* ── STAT CARDS ───────────────────────────────────────────────────────────── */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;transition:box-shadow .15s}
+.stat-card:hover{box-shadow:var(--shadow)}
+.stat-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px}
+.stat-value{font-size:24px;font-weight:700;letter-spacing:-.5px;margin-bottom:3px;line-height:1}
+.stat-delta{font-size:11px;color:var(--text2)}
+.stat-delta.pos{color:var(--green)}
+.stat-delta.neg{color:var(--red)}
+
+/* ── PANELS ───────────────────────────────────────────────────────────────── */
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:14px;overflow:hidden}
+.panel-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.panel-title{font-size:13px;font-weight:700}
+.panel-sub{font-size:11px;color:var(--text3);margin-left:auto}
+.two-col{display:grid;grid-template-columns:1.45fr 1fr;gap:14px;align-items:start}
+
+/* ── FILTER BAR ───────────────────────────────────────────────────────────── */
+.filter-bar{padding:9px 14px;border-bottom:1px solid var(--border);display:flex;gap:7px;align-items:center;flex-wrap:wrap;background:var(--surface)}
+.filter-chip{padding:3px 9px;border-radius:14px;border:1px solid var(--border2);font-size:10px;font-weight:500;color:var(--text2);cursor:pointer;background:transparent;font-family:inherit;transition:all .1s;width:auto}
+.filter-chip:hover{border-color:var(--brand);color:var(--brand)}
+.filter-chip.active{background:var(--brand-l);border-color:#F0997B;color:var(--brand-d);font-weight:600}
+.search-wrap{position:relative;flex:1;min-width:150px}
+.search-wrap svg{position:absolute;left:9px;top:50%;transform:translateY(-50%);width:12px;height:12px;fill:var(--text3);pointer-events:none}
+.search-input{padding-left:28px;background:var(--surface2);font-size:12px}
+.search-input:focus{background:var(--surface)}
+
+/* ── TABS ─────────────────────────────────────────────────────────────────── */
+.tab-row{display:flex;border-bottom:1px solid var(--border);padding:0 14px}
+.tab{padding:8px 12px;font-size:12px;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;font-weight:500;transition:color .1s}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--brand);border-bottom-color:var(--brand);font-weight:600}
+
+/* ── BULK ACTION BAR ──────────────────────────────────────────────────────── */
+.bulk-bar{background:var(--text);color:#fff;padding:8px 14px;display:none;align-items:center;gap:10px;font-size:11px;font-weight:500}
+.bulk-bar.visible{display:flex}
+.bulk-bar .btn{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.25);color:#fff;font-size:10px}
+.bulk-bar .btn:hover{background:rgba(255,255,255,.22)}
+
+/* ── REVIEW ROWS ──────────────────────────────────────────────────────────── */
+.review-row{padding:11px 14px;border-bottom:1px solid var(--border);display:grid;grid-template-columns:18px 86px 1fr auto;gap:10px;align-items:start;transition:background .08s}
+.review-row:last-child{border-bottom:none}
+.review-row:hover{background:var(--surface2)}
+.review-row.selected{background:#EEF4FB}
+.review-row.compact{grid-template-columns:86px 1fr auto}
+.rv-check{padding-top:1px}
+.stars{display:flex;gap:2px;margin-bottom:4px}
+.star{width:11px;height:11px}
+.star-fill{fill:#EF9F27}
+.star-empty{fill:var(--border)}
+.rv-sku{font-size:9px;color:var(--text3);margin-top:3px;word-break:break-all;line-height:1.4}
+.rv-author{font-size:10px;color:var(--text2);margin-top:2px}
+.rv-date{font-size:9px;color:var(--text3);margin-top:2px}
+.rv-title{font-size:12px;font-weight:600;margin-bottom:3px;cursor:pointer;line-height:1.4;color:var(--text)}
+.rv-title:hover{color:var(--brand);text-decoration:underline}
+.rv-body{font-size:11px;color:var(--text2);line-height:1.55;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.rv-tags{display:flex;gap:3px;flex-wrap:wrap;margin-top:6px}
+.rv-actions{display:flex;flex-direction:column;gap:4px;align-items:flex-end}
+
+/* ── TAGS ─────────────────────────────────────────────────────────────────── */
+.tag{font-size:9px;padding:2px 7px;border-radius:10px;font-weight:600;white-space:nowrap;letter-spacing:.01em}
+.tag-detail{background:var(--blue-bg);color:var(--blue)}
+.tag-product{background:var(--green-bg);color:var(--green)}
+.tag-cs{background:var(--amber-bg);color:var(--amber)}
+.tag-packaging{background:var(--purple-bg);color:var(--purple)}
+.tag-escalated{background:var(--red-bg);color:var(--red)}
+.tag-positive{background:var(--green-bg);color:var(--green)}
+.tag-manual{background:var(--purple-bg);color:var(--purple)}
+
+/* ── PAGINATION ───────────────────────────────────────────────────────────── */
+.pagination{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-top:1px solid var(--border);font-size:11px;color:var(--text2)}
+.pag-btns{display:flex;gap:4px}
+.pag-btn{padding:3px 9px;border:1px solid var(--border2);background:var(--surface);border-radius:4px;font-size:11px;cursor:pointer;font-family:inherit;color:var(--text);transition:background .1s}
+.pag-btn:hover{background:var(--surface2)}
+.pag-btn.active{background:var(--brand);color:#fff;border-color:var(--brand)}
+.pag-btn:disabled{opacity:.35;cursor:default}
+
+/* ── RATING DISTRIBUTION ─────────────────────────────────────────────────── */
+.rating-row{display:flex;align-items:center;gap:8px;padding:5px 14px;border-bottom:1px solid var(--border)}
+.rating-row:last-child{border-bottom:none}
+.rating-label{font-size:11px;color:var(--text2);width:36px;flex-shrink:0}
+.rating-bar-bg{flex:1;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden}
+.rating-bar{height:6px;border-radius:3px;background:#EF9F27;transition:width .4s}
+.rating-count{font-size:10px;color:var(--text3);width:30px;text-align:right;flex-shrink:0}
+
+/* ── ISSUE BARS ───────────────────────────────────────────────────────────── */
+.issue-item{padding:9px 14px;border-bottom:1px solid var(--border)}
+.issue-item:last-child{border-bottom:none}
+.issue-header{display:flex;align-items:center;gap:7px;margin-bottom:5px}
+.issue-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.issue-label{font-size:11px;font-weight:600;color:var(--text)}
+.issue-count{margin-left:auto;font-size:10px;color:var(--text3);font-weight:600}
+.issue-bar-bg{height:4px;background:var(--surface2);border-radius:2px}
+.issue-bar{height:4px;border-radius:2px;transition:width .4s}
+
+/* ── TICKETS ──────────────────────────────────────────────────────────────── */
+.ticket-row{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:12px}
+.ticket-row:last-child{border-bottom:none}
+.ticket-row:hover{background:var(--surface2)}
+.ticket-priority{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:3px}
+.t-high{background:#E24B4A}
+.t-medium{background:#EF9F27}
+.t-low{background:#639922}
+.ticket-body{flex:1;min-width:0}
+.ticket-title{font-size:12px;font-weight:600;margin-bottom:3px;cursor:pointer;color:var(--text)}
+.ticket-title:hover{color:var(--brand);text-decoration:underline}
+.ticket-meta{font-size:10px;color:var(--text3);margin-bottom:4px}
+.ticket-notes{font-size:11px;color:var(--text2);font-style:italic;margin:4px 0;padding:6px 8px;background:var(--surface2);border-radius:4px;border-left:2px solid var(--border3)}
+.ticket-teams{display:flex;gap:4px;flex-wrap:wrap;margin-top:5px}
+.team-badge{display:inline-block;padding:2px 7px;border-radius:10px;font-size:9px;font-weight:700;margin-top:2px}
+.ticket-status-badge{font-size:10px;padding:3px 8px;border-radius:var(--radius-sm);font-weight:600;white-space:nowrap}
+.status-open{background:var(--red-bg);color:var(--red)}
+.status-progress{background:var(--amber-bg);color:var(--amber)}
+.status-resolved{background:var(--green-bg);color:var(--green)}
+.ticket-actions{display:flex;flex-direction:column;gap:5px;align-items:flex-end;flex-shrink:0}
+
+/* ── TICKET COMMENTS ──────────────────────────────────────────────────────── */
+.comments-section{margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+.comments-label{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px}
+.comment-item{font-size:10px;color:var(--text2);padding:4px 0;border-bottom:1px solid var(--border)}
+.comment-item:last-child{border-bottom:none}
+.comment-item strong{color:var(--text);font-weight:600}
+.comment-input-row{display:flex;gap:6px;margin-top:7px}
+.comment-input-row input{font-size:11px;padding:5px 9px;flex:1}
+
+/* ── IMPORT DROP ZONE ─────────────────────────────────────────────────────── */
+.drop-zone{border:2px dashed var(--border2);border-radius:var(--radius);padding:32px;text-align:center;cursor:pointer;transition:all .15s;margin-bottom:14px}
+.drop-zone:hover,.drop-zone.drag-over{border-color:var(--brand);background:var(--brand-l)}
+.drop-zone svg{width:28px;height:28px;fill:var(--text3);display:block;margin:0 auto 10px}
+.drop-zone-title{font-size:13px;font-weight:600;margin-bottom:4px}
+.drop-zone-sub{font-size:11px;color:var(--text3)}
+
+/* ── ADD REVIEW FORM ──────────────────────────────────────────────────────── */
+.form-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-group{margin-bottom:0}
+
+/* ── SETTINGS ─────────────────────────────────────────────────────────────── */
+.settings-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:14px;overflow:hidden}
+.settings-title{padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px;font-weight:700}
+.settings-row{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+.settings-row:last-child{border-bottom:none}
+.settings-label{font-size:13px;font-weight:500;flex:1;min-width:0}
+.settings-desc{font-size:11px;color:var(--text3);margin-top:2px}
+.settings-input{border:1px solid var(--border2);border-radius:var(--radius-sm);padding:7px 10px;font-size:12px;font-family:inherit;color:var(--text);background:var(--surface);width:260px;outline:none}
+.settings-input:focus{border-color:var(--brand)}
+.settings-status{font-size:11px;padding:3px 10px;border-radius:10px;font-weight:600}
+.status-ok{background:var(--green-bg);color:var(--green);border:1px solid var(--green-bd)}
+.status-missing{background:var(--surface2);color:var(--text3);border:1px solid var(--border)}
+
+/* ── MODALS ───────────────────────────────────────────────────────────────── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:1000;backdrop-filter:blur(1px)}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border-radius:var(--radius-lg);padding:24px;width:480px;max-height:86vh;overflow-y:auto;box-shadow:var(--shadow-md)}
+.modal-wide{width:620px}
+.modal-title{font-size:15px;font-weight:700;margin-bottom:18px;letter-spacing:-.2px}
+.modal-field{margin-bottom:14px}
+.modal-field select{border:1px solid var(--border2);border-radius:var(--radius-sm);padding:7px 10px;font-size:12px;font-family:inherit;color:var(--text);background:var(--surface);width:100%;outline:none}
+.modal-field select:focus{border-color:var(--brand)}
+.modal-field textarea{border:1px solid var(--border2);border-radius:var(--radius-sm);padding:7px 10px;font-size:12px;font-family:inherit;color:var(--text);background:var(--surface);width:100%;outline:none;resize:vertical;min-height:70px;line-height:1.55}
+.modal-field textarea:focus{border-color:var(--brand)}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
+.team-checks{display:flex;flex-direction:column;gap:6px;padding:8px 0}
+.team-check-item{display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;padding:4px 6px;border-radius:4px;transition:background .1s}
+.team-check-item:hover{background:var(--surface2)}
+.team-check-item input{width:14px;height:14px}
+.slack-preview{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;font-size:10px;color:var(--text2);margin-top:8px;line-height:1.7;white-space:pre-wrap;font-family:'SF Mono',Consolas,monospace}
+
+/* ── REVIEW DETAIL ────────────────────────────────────────────────────────── */
+.detail-stars{display:flex;gap:3px;margin-bottom:10px}
+.detail-star{width:14px;height:14px}
+.detail-meta-grid{display:flex;gap:18px;flex-wrap:wrap;margin-bottom:14px}
+.detail-meta-item{font-size:11px;color:var(--text2)}
+.detail-meta-item strong{color:var(--text);font-weight:600}
+.detail-body{font-size:13px;line-height:1.75;color:var(--text);background:var(--surface2);border-radius:var(--radius-sm);padding:14px;margin-bottom:14px;border-left:3px solid var(--border3)}
+.detail-tags{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:14px}
+.ai-response-box{background:var(--green-bg);border:1px solid var(--green-bd);border-radius:var(--radius-sm);padding:14px;font-size:12px;line-height:1.7;color:#27500A;margin-top:10px;white-space:pre-wrap}
+.ai-draft-section{margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
+
+/* ── AI INSIGHTS ──────────────────────────────────────────────────────────── */
+.ai-loading{display:flex;align-items:center;gap:12px;color:var(--text2);font-size:12px;padding:24px 0}
+.ai-result{font-size:13px;line-height:1.8;color:var(--text);white-space:pre-wrap}
+.ai-result strong{color:var(--text);font-size:13px}
+.spinner{width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--brand);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.insights-meta{margin-top:14px;padding-top:10px;border-top:1px solid var(--border);font-size:10px;color:var(--text3)}
+
+/* ── ONBOARDING ───────────────────────────────────────────────────────────── */
+.onboard-state{text-align:center;padding:56px 32px}
+.onboard-state svg{width:44px;height:44px;fill:var(--border);display:block;margin:0 auto 18px}
+.onboard-title{font-size:18px;font-weight:700;letter-spacing:-.3px;margin-bottom:10px}
+.onboard-sub{font-size:13px;color:var(--text2);margin-bottom:24px;line-height:1.65;max-width:360px;margin-left:auto;margin-right:auto}
+
+/* ── CONFIRM DIALOG ───────────────────────────────────────────────────────── */
+.confirm-modal{width:360px}
+.confirm-body{font-size:13px;line-height:1.65;color:var(--text2);margin-bottom:4px}
+
+/* ── EMPTY STATE ──────────────────────────────────────────────────────────── */
+.empty-state{padding:36px;text-align:center;color:var(--text3)}
+.empty-state svg{width:30px;height:30px;fill:var(--border);display:block;margin:0 auto 10px}
+.empty-state p{font-size:12px}
+
+/* ── TOAST ────────────────────────────────────────────────────────────────── */
+.toast-container{position:fixed;bottom:24px;right:24px;display:flex;flex-direction:column;gap:8px;z-index:9999;pointer-events:none}
+.toast{background:var(--text);color:#fff;border-radius:var(--radius-sm);padding:10px 16px;font-size:12px;font-weight:500;pointer-events:none;transform:translateY(12px);opacity:0;transition:all .22s;max-width:340px;box-shadow:var(--shadow-md);display:flex;align-items:center;gap:8px}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.ok{background:#27500A}
+.toast.err{background:var(--red)}
+.toast.warn{background:#854F0B}
+.toast svg{width:14px;height:14px;fill:currentColor;flex-shrink:0}
+
+/* ── MISC ─────────────────────────────────────────────────────────────────── */
+.divider{height:1px;background:var(--border);margin:14px 0}
+.badge-row{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}
+.kbd{display:inline-block;padding:1px 5px;border-radius:3px;border:1px solid var(--border2);background:var(--surface2);font-size:10px;font-family:monospace;color:var(--text2)}
+.section-label{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+
+/* ── RESPONSIVE ───────────────────────────────────────────────────────────── */
+@media(max-width:900px){
+  .sb{width:48px;overflow:hidden}
+  .sb-brand,.sb-section-label,.nav-item span:not(.nav-badge),.user-name,.user-role,.sb-logout{display:none}
+  .nav-item{justify-content:center;padding:10px}
+  .sb-footer{padding:8px}
+  .user-row{justify-content:center}
+  .stat-grid{grid-template-columns:repeat(2,1fr)}
+  .two-col{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ── LOGIN ──────────────────────────────────────────────────────────────── -->
+<div id="login">
+  <div class="lcard">
+    <div class="logo">
+      <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"/></svg></div>
+      <div><div class="logo-name">ReviewHub</div><div class="logo-sub">Cuckoo Electronics America</div></div>
+    </div>
+    <div class="lfield">
+      <label for="inp-role">Your team</label>
+      <select id="inp-role" autocomplete="off">
+        <option value="">Select your team...</option>
+        <option value="admin">Admin</option>
+        <option value="marketing">Marketing</option>
+        <option value="product">Product Dev</option>
+        <option value="tech">Tech</option>
+        <option value="cs">Customer Service</option>
+      </select>
+    </div>
+    <div class="lfield">
+      <label for="inp-pw">Password</label>
+      <input type="password" id="inp-pw" autocomplete="current-password" placeholder="Enter team password"/>
+    </div>
+    <button class="lbtn" id="login-btn">Sign in</button>
+    <div class="lerr" id="login-err" role="alert">
+      <svg viewBox="0 0 16 16" fill="currentColor" style="width:14px;height:14px;flex-shrink:0"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm.75 10.25h-1.5v-1.5h1.5v1.5zm0-3h-1.5V4.75h1.5v3.5z"/></svg>
+      <span id="login-err-msg"></span>
+    </div>
+    <div class="hint">
+      Default passwords — Admin: <strong>admin123</strong> · Marketing: <strong>mkt123</strong><br>
+      Product Dev: <strong>prod123</strong> · Tech: <strong>tech123</strong> · CS: <strong>cs123</strong><br>
+      Change passwords in Settings after logging in as Admin.
+    </div>
+  </div>
+</div>
+
+<!-- ── APP ────────────────────────────────────────────────────────────────── -->
+<div id="app">
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <nav class="sb" role="navigation" aria-label="Main navigation">
+    <div class="sb-brand">
+      <div class="sb-icon"><svg viewBox="0 0 24 24"><path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"/></svg></div>
+      <div><div class="sb-name">ReviewHub</div><div class="sb-sub">Cuckoo Electronics</div></div>
+    </div>
+
+    <div class="sb-section">
+      <div class="sb-section-label">Workspace</div>
+      <div class="nav-item active" id="nav-dashboard" role="button" tabindex="0" aria-label="Dashboard" onclick="goPage('dashboard',this)">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h5v5H2V2zm0 7h5v5H2V9zm7-7h5v5H9V2zm0 7h5v5H9V9z"/></svg>
+        <span>Dashboard</span>
+      </div>
+      <div class="nav-item" id="nav-reviews" role="button" tabindex="0" aria-label="All reviews" onclick="goPage('reviews',this)">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1l1.8 3.6 4 .58-2.9 2.83.68 3.99L8 9.9l-3.58 1.1.68-3.99L2.2 5.18l4-.58z"/></svg>
+        <span>All reviews</span>
+        <span class="nav-badge" id="badge-reviews">0</span>
+      </div>
+      <div class="nav-item" id="nav-tickets" role="button" tabindex="0" aria-label="Tickets" onclick="goPage('tickets',this)">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M14 3H2a1 1 0 00-1 1v8a1 1 0 001 1h12a1 1 0 001-1V4a1 1 0 00-1-1zM2 4h12v2H2V4zm0 4h5v4H2V8zm7 4V8h5v4H9z"/></svg>
+        <span>Tickets</span>
+        <span class="nav-badge amber" id="badge-tickets">0</span>
+      </div>
+      <div class="nav-item" id="nav-insights" role="button" tabindex="0" aria-label="AI Insights" onclick="goPage('insights',this)">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm0 2a5 5 0 110 10A5 5 0 018 3zm-.5 2v4l3 1.5-.5 1L7 10V5h.5z"/></svg>
+        <span>AI Insights</span>
+      </div>
+    </div>
+
+    <div class="sb-section">
+      <div class="sb-section-label">Data</div>
+      <div class="nav-item" id="nav-import" role="button" tabindex="0" aria-label="Import" onclick="goPage('import',this)">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M8 1v9M5 7l3 3 3-3M2 13h12"/></svg>
+        <span>Import .xlsx</span>
+      </div>
+      <div class="nav-item" id="nav-add" role="button" tabindex="0" aria-label="Add review" onclick="goPage('add',this)">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm1 10H7V9H5V7h2V5h2v2h2v2H9v2z"/></svg>
+        <span>Add review</span>
+      </div>
+      <div class="nav-item" id="nav-export" role="button" tabindex="0" aria-label="Export CSV" onclick="handleExport()">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M8 11V2M5 8l3 3 3-3M2 13h12"/></svg>
+        <span>Export CSV</span>
+      </div>
+    </div>
+
+    <div class="sb-section" id="sb-admin-section" style="display:none">
+      <div class="sb-section-label">Admin</div>
+      <div class="nav-item" id="nav-settings" role="button" tabindex="0" aria-label="Settings" onclick="goPage('settings',this)">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 5a3 3 0 100 6A3 3 0 008 5zm0 1.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM6.5 1l-.5 2A5 5 0 004.3 4.3L2.3 3.8 1 5.9l1.6 1.2A5 5 0 002.5 8a5 5 0 00.1 1L1 10.1l1.3 2.1 2-.5A5 5 0 004.5 13l.5 2h3l.5-2a5 5 0 001.7-1.4l2 .5L13.5 10l-1.6-1A5 5 0 0012 8a5 5 0 00-.1-.9L13.5 5.9 12.2 3.8l-2 .5A5 5 0 008.5 3L8 1H6.5z"/></svg>
+        <span>Settings</span>
+      </div>
+    </div>
+
+    <div class="sb-footer">
+      <div class="user-row">
+        <div class="user-av" id="user-avatar">?</div>
+        <div style="min-width:0;flex:1">
+          <div class="user-name" id="user-name">—</div>
+          <div class="user-role" id="user-role">—</div>
+        </div>
+        <button class="sb-logout" onclick="logout()" aria-label="Sign out">Sign out</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <div class="main" role="main">
+    <div class="topbar" role="banner">
+      <span class="topbar-title" id="topbar-title">Dashboard</span>
+      <div class="topbar-sep"></div>
+      <span class="topbar-sub" id="topbar-sub">Loading...</span>
+      <div class="topbar-right" id="topbar-right"></div>
+    </div>
+
+    <div class="content" id="page-content">
+
+      <!-- DASHBOARD -->
+      <div class="page active" id="page-dashboard">
+        <div id="dashboard-body"></div>
+      </div>
+
+      <!-- REVIEWS -->
+      <div class="page" id="page-reviews">
+        <div class="panel">
+          <div class="tab-row" id="review-tab-row">
+            <div class="tab active" onclick="setTab('all',this)">All</div>
+            <div class="tab" onclick="setTab('low',this)">1–2 ★</div>
+            <div class="tab" onclick="setTab('escalated',this)">Escalated</div>
+            <div class="tab" onclick="setTab('untagged',this)">Untagged</div>
+          </div>
+          <div class="filter-bar">
+            <input type="checkbox" id="chk-select-all" title="Select all on this page" style="width:15px;height:15px;flex-shrink:0;cursor:pointer" onchange="toggleSelectAll(this.checked)"/>
+            <div class="search-wrap">
+              <svg viewBox="0 0 16 16"><path d="M6 1a5 5 0 100 10A5 5 0 006 1zm4.3 8.88l3.4 3.4-1.42 1.42-3.4-3.4A7 7 0 1110.3 9.88z"/></svg>
+              <input class="search-input" id="search-input" placeholder="Search title, body, author..." oninput="debouncedSearch()" aria-label="Search reviews"/>
+            </div>
+            <select class="filter-chip active" id="filter-sku" onchange="renderReviews()" aria-label="Filter by SKU" style="border-radius:14px;cursor:pointer;padding:3px 9px"><option value="">All SKUs</option></select>
+            <select class="filter-chip" id="filter-rating" onchange="renderReviews()" aria-label="Filter by rating" style="border-radius:14px;cursor:pointer;padding:3px 9px">
+              <option value="">All ratings</option>
+              <option value="5">5 ★</option><option value="4">4 ★</option>
+              <option value="3">3 ★</option><option value="2">2 ★</option><option value="1">1 ★</option>
+            </select>
+            <select class="filter-chip" id="filter-source" onchange="renderReviews()" aria-label="Filter by source" style="border-radius:14px;cursor:pointer;padding:3px 9px">
+              <option value="">All sources</option>
+              <option value="amazon">Amazon</option>
+              <option value="website">Website (D2C)</option>
+            </select>
+            <select class="filter-chip" id="filter-date" onchange="renderReviews()" aria-label="Filter by date" style="border-radius:14px;cursor:pointer;padding:3px 9px">
+              <option value="">All time</option>
+              <option value="7">Last 7 days</option>
+              <option value="30">Last 30 days</option>
+              <option value="90">Last 90 days</option>
+              <option value="365">Last year</option>
+            </select>
+            <select class="filter-chip" id="filter-sort" onchange="renderReviews()" aria-label="Sort order" style="border-radius:14px;cursor:pointer;padding:3px 9px">
+              <option value="date-desc">Newest first</option>
+              <option value="date-asc">Oldest first</option>
+              <option value="rating-asc">Rating ↑</option>
+              <option value="rating-desc">Rating ↓</option>
+            </select>
+          </div>
+          <div class="bulk-bar" id="bulk-bar" role="toolbar" aria-label="Bulk actions">
+            <span id="bulk-label">0 selected</span>
+            <button class="btn btn-sm" onclick="bulkEscalate()">⚑ Escalate selected</button>
+            <button class="btn btn-sm" onclick="bulkTag('detail')">Tag: Detail page</button>
+            <button class="btn btn-sm" onclick="bulkTag('product')">Tag: Product</button>
+            <button class="btn btn-sm" onclick="bulkTag('packaging')">Tag: Packaging</button>
+            <button class="btn btn-sm" onclick="bulkTag('cs')">Tag: CS</button>
+            <button class="btn btn-sm" onclick="clearSelection()" style="margin-left:auto">Clear ✕</button>
+          </div>
+          <div id="reviews-list" role="list" aria-live="polite" aria-label="Reviews"></div>
+          <div id="pagination-bar"></div>
+        </div>
+      </div>
+
+      <!-- TICKETS -->
+      <div class="page" id="page-tickets">
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">Escalated tickets</span>
+            <span class="panel-sub" id="tickets-open-label">0 open</span>
+          </div>
+          <div class="filter-bar">
+            <select class="filter-chip active" id="tk-filter-status" onchange="renderTickets()" style="border-radius:14px;cursor:pointer;padding:3px 9px">
+              <option value="">All statuses</option>
+              <option value="open">Open</option>
+              <option value="progress">In progress</option>
+              <option value="resolved">Resolved</option>
+            </select>
+            <select class="filter-chip" id="tk-filter-team" onchange="renderTickets()" style="border-radius:14px;cursor:pointer;padding:3px 9px">
+              <option value="">All teams</option>
+              <option value="product">Product Dev</option>
+              <option value="tech">Tech</option>
+              <option value="marketing">Marketing</option>
+              <option value="cs">Customer Service</option>
+            </select>
+            <select class="filter-chip" id="tk-filter-priority" onchange="renderTickets()" style="border-radius:14px;cursor:pointer;padding:3px 9px">
+              <option value="">All priorities</option>
+              <option value="high">High</option>
+              <option value="medium">Medium</option>
+              <option value="low">Low</option>
+            </select>
+            <select class="filter-chip" id="tk-filter-cat" onchange="renderTickets()" style="border-radius:14px;cursor:pointer;padding:3px 9px">
+              <option value="">All categories</option>
+              <option value="product">Product issue</option>
+              <option value="detail">Detail page</option>
+              <option value="packaging">Packaging</option>
+              <option value="cs">Customer service</option>
+            </select>
+          </div>
+          <div id="tickets-list" role="list" aria-label="Tickets"></div>
+        </div>
+      </div>
+
+      <!-- AI INSIGHTS -->
+      <div class="page" id="page-insights">
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">AI-powered insights</span>
+            <span class="panel-sub">Powered by Claude</span>
+          </div>
+          <div style="padding:14px;display:flex;gap:8px;flex-wrap:wrap;border-bottom:1px solid var(--border);align-items:center">
+            <select class="filter-chip" id="ai-filter-sku" style="border-radius:14px;cursor:pointer;padding:4px 10px" aria-label="Filter by SKU"><option value="">All products</option></select>
+            <select class="filter-chip" id="ai-filter-focus" style="border-radius:14px;cursor:pointer;padding:4px 10px" aria-label="Analysis focus">
+              <option value="all">All improvement areas</option>
+              <option value="detail">Detail page only</option>
+              <option value="product">Product design only</option>
+              <option value="packaging">Packaging &amp; instructions only</option>
+              <option value="cs">Customer service only</option>
+            </select>
+            <select class="filter-chip" id="ai-filter-source" style="border-radius:14px;cursor:pointer;padding:4px 10px" aria-label="Source filter">
+              <option value="">All sources</option>
+              <option value="amazon">Amazon only</option>
+              <option value="website">Website (D2C) only</option>
+            </select>
+            <select class="filter-chip" id="ai-filter-rating" style="border-radius:14px;cursor:pointer;padding:4px 10px" aria-label="Rating filter">
+              <option value="all">All ratings</option>
+              <option value="low">1–2 star only</option>
+              <option value="mid">3 star only</option>
+              <option value="high">4–5 star only</option>
+            </select>
+            <button class="btn btn-primary" id="ai-run-btn" onclick="runInsights()">Generate insights ✦</button>
+            <button class="btn" id="ai-export-btn" onclick="exportInsights()" style="display:none" title="Export insights as text file">↓ Export</button>
+            <button class="btn btn-info" id="ai-ticket-btn" onclick="openInsightTicket()" style="display:none" title="Create a ticket from this insight">+ Create ticket</button>
+          </div>
+          <div id="ai-output" style="padding:16px">
+            <div class="empty-state" style="padding:24px 0">
+              <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg>
+              <p>Select filters above and click <strong>Generate insights</strong> to analyze your reviews with Claude AI.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- IMPORT -->
+      <div class="page" id="page-import">
+        <div class="panel" style="max-width:580px">
+          <div class="panel-header"><span class="panel-title">Import review database</span></div>
+          <div style="padding:20px">
+            <div class="drop-zone" id="drop-zone"
+              role="button" tabindex="0" aria-label="Drop xlsx file or click to browse"
+              onclick="document.getElementById('file-input').click()"
+              ondragover="handleDragOver(event)"
+              ondragleave="handleDragLeave(event)"
+              ondrop="handleDrop(event)">
+              <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg>
+              <div class="drop-zone-title">Drop your .xlsx file here</div>
+              <div class="drop-zone-sub">or click to browse — Cuckoo Amazon Reviews Archive format</div>
+            </div>
+            <input type="file" id="file-input" accept=".xlsx,.xls" style="display:none" onchange="handleFileInput(event)" aria-label="Select xlsx file"/>
+            <div id="import-status" style="font-size:12px;color:var(--text2);margin-top:8px" aria-live="polite"></div>
+            <div id="import-log" style="margin-top:10px;max-height:200px;overflow-y:auto"></div>
+          </div>
+        </div>
+
+        <div class="panel" style="max-width:580px" id="export-for-repo-panel">
+          <div class="panel-header">
+            <span class="panel-title">Share with your team</span>
+            <span class="panel-sub">Commit to GitHub so everyone loads the same data</span>
+          </div>
+          <div style="padding:18px;display:flex;flex-direction:column;gap:14px">
+            <div style="font-size:12px;color:var(--text2);line-height:1.7">
+              After importing your .xlsx, export the data as <code style="background:var(--surface2);padding:1px 5px;border-radius:3px;font-family:monospace">reviews.json</code> and commit it to your GitHub repo at <code style="background:var(--surface2);padding:1px 5px;border-radius:3px;font-family:monospace">public/data/reviews.json</code>. Every team member will automatically load this database when they open the app — no importing required.
+            </div>
+            <div style="background:var(--surface2);border-radius:var(--radius-sm);padding:12px 14px;font-size:11px;color:var(--text2);line-height:1.8;border:1px solid var(--border)">
+              <strong style="color:var(--text);display:block;margin-bottom:6px">How to update the shared database:</strong>
+              1. Import your latest .xlsx above<br>
+              2. Click <strong>Export reviews.json</strong> below<br>
+              3. In GitHub → your repo → <code style="background:var(--surface3);padding:1px 4px;border-radius:3px">public/data/</code> → Upload files<br>
+              4. Drop in the downloaded file → Commit<br>
+              5. Render redeploys in ~1 min — all users get the update on next login
+            </div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <button class="btn btn-primary" onclick="exportForRepo()" id="export-repo-btn">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" style="width:13px;height:13px"><path d="M8 11V2M5 8l3 3 3-3M2 13h12"/></svg>
+                Export reviews.json
+              </button>
+              <span id="export-repo-status" style="font-size:11px;color:var(--text3)"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ADD REVIEW -->
+      <div class="page" id="page-add">
+        <div class="panel" style="max-width:600px">
+          <div class="panel-header"><span class="panel-title">Add a review manually</span><span class="panel-sub">Stored alongside imported reviews</span></div>
+          <div style="padding:18px;display:flex;flex-direction:column;gap:14px">
+            <div class="form-grid-2">
+              <div><label for="add-author">Author name</label><input id="add-author" placeholder="e.g. John D." autocomplete="off"/></div>
+              <div><label for="add-date">Date</label><input id="add-date" type="date"/></div>
+            </div>
+            <div class="form-grid-2">
+              <div>
+                <label for="add-sku">SKU / Product</label>
+                <input id="add-sku" placeholder="e.g. CR-0671V" list="sku-datalist" autocomplete="off"/>
+                <datalist id="sku-datalist"></datalist>
+              </div>
+              <div>
+                <label for="add-rating">Rating</label>
+                <select id="add-rating">
+                  <option value="5">★★★★★ — 5 stars</option>
+                  <option value="4">★★★★☆ — 4 stars</option>
+                  <option value="3">★★★☆☆ — 3 stars</option>
+                  <option value="2">★★☆☆☆ — 2 stars</option>
+                  <option value="1">★☆☆☆☆ — 1 star</option>
+                </select>
+              </div>
+            </div>
+            <div><label for="add-title">Review title</label><input id="add-title" placeholder="e.g. Great rice cooker but lid feels flimsy"/></div>
+            <div><label for="add-body">Review body</label><textarea id="add-body" placeholder="Full review text..." style="min-height:100px"></textarea></div>
+            <div class="form-grid-2">
+              <div><label for="add-style">Style / Variation</label><input id="add-style" placeholder="e.g. Color: White | 6 Cup"/></div>
+              <div>
+                <label for="add-verified">Verified purchase</label>
+                <select id="add-verified"><option value="yes">Yes</option><option value="no">No</option><option value="">Unknown</option></select>
+              </div>
+            </div>
+            <div><label for="add-url">Amazon URL (optional)</label><input id="add-url" type="url" placeholder="https://www.amazon.com/..."/></div>
+            <div>
+              <label for="add-source">Source</label>
+              <select id="add-source">
+                <option value="manual">Manually entered</option>
+                <option value="amazon">Amazon copy/paste</option>
+                <option value="email">Customer email</option>
+                <option value="cs">CS ticket</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div id="add-form-error" style="color:var(--red);font-size:12px;display:none"></div>
+            <div style="display:flex;gap:8px;justify-content:flex-end;padding-top:10px;border-top:1px solid var(--border)">
+              <button class="btn" onclick="resetAddForm()">Clear form</button>
+              <button class="btn btn-primary" onclick="submitAddReview()">Save review</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SETTINGS -->
+      <div class="page" id="page-settings">
+        <div class="settings-section">
+          <div class="settings-title">Integrations</div>
+          <div class="settings-row">
+            <div>
+              <div class="settings-label">PostgreSQL database</div>
+              <div class="settings-desc">Set <code>DATABASE_URL</code> in Render. Stores shared tickets, tags, and escalations.</div>
+            </div>
+            <span class="settings-status" id="status-db">Checking...</span>
+          </div>
+          <div class="settings-row">
+            <div>
+              <div class="settings-label">Anthropic API key</div>
+              <div class="settings-desc">Set <code>ANTHROPIC_API_KEY</code> as an environment variable in Render. Never paste it here.</div>
+            </div>
+            <span class="settings-status" id="status-ai">Checking...</span>
+          </div>
+          <div class="settings-row">
+            <div>
+              <div class="settings-label">Slack webhook</div>
+              <div class="settings-desc">Set <code>SLACK_WEBHOOK_URL</code> as an environment variable in Render. Fires on every escalation.</div>
+            </div>
+            <span class="settings-status" id="status-slack">Checking...</span>
+          </div>
+          <div class="settings-row">
+            <div>
+              <div class="settings-label">Test Slack notification</div>
+              <div class="settings-desc">Sends a test message to verify the webhook is working.</div>
+            </div>
+            <button class="btn" onclick="testSlack()">Send test</button>
+          </div>
+        </div>
+        <div class="settings-section">
+          <div class="settings-title">Team passwords</div>
+          <div id="password-settings-body"></div>
+        </div>
+        <div class="settings-section">
+          <div class="settings-title">Data management</div>
+          <div class="settings-row">
+            <div>
+              <div class="settings-label">Clear all data</div>
+              <div class="settings-desc">Permanently delete all reviews, tickets, and settings from this browser. Cannot be undone.</div>
+            </div>
+            <button class="btn btn-danger btn-sm" onclick="confirmClearAll()">Clear all data</button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /layout -->
+</div><!-- /app -->
+
+<!-- ── ESCALATE MODAL ──────────────────────────────────────────────────────── -->
+<div class="modal-overlay" id="modal-escalate" role="dialog" aria-modal="true" aria-labelledby="esc-modal-title">
+  <div class="modal">
+    <div class="modal-title" id="esc-modal-title">Escalate review</div>
+    <div class="modal-field">
+      <label>Priority</label>
+      <select id="esc-priority" onchange="updateSlackPreview()">
+        <option value="high">🔴 High — needs immediate attention</option>
+        <option value="medium" selected>🟡 Medium — investigate this week</option>
+        <option value="low">🟢 Low — track and monitor</option>
+      </select>
+    </div>
+    <div class="modal-field">
+      <label>Assign to team(s)</label>
+      <div class="team-checks" id="team-checkboxes">
+        <label class="team-check-item"><input type="checkbox" value="product" onchange="updateSlackPreview()"><span>Product Dev</span></label>
+        <label class="team-check-item"><input type="checkbox" value="tech" onchange="updateSlackPreview()"><span>Tech</span></label>
+        <label class="team-check-item"><input type="checkbox" value="marketing" onchange="updateSlackPreview()"><span>Marketing</span></label>
+        <label class="team-check-item"><input type="checkbox" value="cs" onchange="updateSlackPreview()"><span>Customer Service</span></label>
+      </div>
+      <div id="team-validation-msg" style="color:var(--amber);font-size:11px;margin-top:4px;display:none">Please assign to at least one team.</div>
+    </div>
+    <div class="modal-field">
+      <label>Category</label>
+      <select id="esc-category">
+        <option value="product">Product issue</option>
+        <option value="detail">Detail page improvement</option>
+        <option value="packaging">Packaging / instructions</option>
+        <option value="cs">Customer service needed</option>
+        <option value="positive">Positive insight</option>
+      </select>
+    </div>
+    <div class="modal-field">
+      <label>Notes for the team <span style="font-weight:400;color:var(--text3)">(optional)</span></label>
+      <textarea id="esc-notes" placeholder="Add context, repro steps, links to similar reviews..." oninput="updateSlackPreview()"></textarea>
+    </div>
+    <div id="slack-preview-wrap" style="display:none">
+      <label>Slack message preview</label>
+      <div class="slack-preview" id="slack-preview-text"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('modal-escalate')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitEscalation()">Escalate &amp; notify</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── REVIEW DETAIL MODAL ─────────────────────────────────────────────────── -->
+<div class="modal-overlay" id="modal-review-detail" role="dialog" aria-modal="true" aria-labelledby="detail-modal-title">
+  <div class="modal modal-wide">
+    <div id="review-detail-body"></div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('modal-review-detail')">Close</button>
+      <button class="btn btn-primary" id="detail-escalate-btn" style="display:none">Escalate ⚑</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── CONFIRM MODAL ───────────────────────────────────────────────────────── -->
+<div class="modal-overlay" id="modal-confirm" role="dialog" aria-modal="true">
+  <div class="modal confirm-modal">
+    <div class="modal-title" id="confirm-title">Are you sure?</div>
+    <p class="confirm-body" id="confirm-body"></p>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('modal-confirm')">Cancel</button>
+      <button class="btn btn-danger" id="confirm-ok-btn">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── INSIGHT TICKET MODAL ────────────────────────────────────────────────── -->
+<div class="modal-overlay" id="modal-insight-ticket" role="dialog" aria-modal="true" aria-labelledby="itk-title">
+  <div class="modal">
+    <div class="modal-title" id="itk-title">Create ticket from AI insight</div>
+    <div class="modal-field">
+      <label>Insight summary <span style="font-weight:400;color:var(--text3)">(editable)</span></label>
+      <textarea id="itk-summary" style="min-height:90px;border:1px solid var(--border2);border-radius:var(--radius-sm);padding:8px 10px;font-size:12px;font-family:inherit;color:var(--text);background:var(--surface);width:100%;outline:none;resize:vertical;line-height:1.55" placeholder="Paste or type the specific finding you want to action..."></textarea>
+    </div>
+    <div class="modal-field">
+      <label>Priority</label>
+      <select id="itk-priority" style="border:1px solid var(--border2);border-radius:var(--radius-sm);padding:7px 10px;font-size:12px;font-family:inherit;color:var(--text);background:var(--surface);width:100%;outline:none">
+        <option value="high">🔴 High — needs immediate attention</option>
+        <option value="medium" selected>🟡 Medium — investigate this week</option>
+        <option value="low">🟢 Low — track and monitor</option>
+      </select>
+    </div>
+    <div class="modal-field">
+      <label>Assign to team(s)</label>
+      <div class="team-checks" id="itk-teams">
+        <label class="team-check-item"><input type="checkbox" value="product"><span>Product Dev</span></label>
+        <label class="team-check-item"><input type="checkbox" value="tech"><span>Tech</span></label>
+        <label class="team-check-item"><input type="checkbox" value="marketing"><span>Marketing</span></label>
+        <label class="team-check-item"><input type="checkbox" value="cs"><span>Customer Service</span></label>
+      </div>
+      <div id="itk-team-err" style="color:var(--amber);font-size:11px;margin-top:4px;display:none">Please assign to at least one team.</div>
+    </div>
+    <div class="modal-field">
+      <label>Category</label>
+      <select id="itk-category" style="border:1px solid var(--border2);border-radius:var(--radius-sm);padding:7px 10px;font-size:12px;font-family:inherit;color:var(--text);background:var(--surface);width:100%;outline:none">
+        <option value="product">Product issue</option>
+        <option value="detail">Detail page improvement</option>
+        <option value="packaging">Packaging / instructions</option>
+        <option value="cs">Customer service</option>
+        <option value="positive">Positive insight</option>
+      </select>
+    </div>
+    <div class="modal-field">
+      <label>Source context <span style="font-weight:400;color:var(--text3)">(auto-filled)</span></label>
+      <input id="itk-source" style="border:1px solid var(--border2);border-radius:var(--radius-sm);padding:7px 10px;font-size:12px;font-family:inherit;color:var(--text);background:var(--surface2);width:100%;outline:none" readonly/>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('modal-insight-ticket')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitInsightTicket()">Create ticket</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── TOAST CONTAINER ─────────────────────────────────────────────────────── -->
+<div class="toast-container" id="toast-container" aria-live="polite" aria-atomic="false"></div>
+
+<!-- ── SCRIPT ──────────────────────────────────────────────────────────────── -->
+<script>
+'use strict';
+
+// ── CONSTANTS ─────────────────────────────────────────────────────────────────
+const ROLES = {
+  admin:     { label: 'Admin',            access: 'All access',        color: ['var(--purple-bg)', 'var(--purple)'] },
+  marketing: { label: 'Marketing',        access: 'Marketing access',  color: ['var(--blue-bg)',   'var(--blue)']   },
+  product:   { label: 'Product Dev',      access: 'Product access',    color: ['var(--green-bg)',  'var(--green)']  },
+  tech:      { label: 'Tech',             access: 'Tech access',       color: ['var(--blue-bg)',   'var(--blue)']   },
+  cs:        { label: 'Customer Service', access: 'CS access',         color: ['var(--amber-bg)',  'var(--amber)']  },
+};
+
+const DEFAULT_PASSWORDS = { admin:'admin123', marketing:'mkt123', product:'prod123', tech:'tech123', cs:'cs123' };
+
+const PAGE_SIZE = 50;
+
+const ISSUE_PATTERNS = [
+  { label: 'Unclear instructions / manual',  keywords: ['instruction','manual','unclear','confusing','direction','how to','setup'],              color: '#E24B4A', team: 'product'   },
+  { label: 'Arrived broken / damaged',        keywords: ['broken','damage','damaged','defective','cracked','arrived broken','not working','DOA'], color: '#E24B4A', team: 'cs'        },
+  { label: 'Missing detail page info',        keywords: ['not disclosed','advertised','misleading','description says','not mentioned'],           color: '#EF9F27', team: 'marketing' },
+  { label: 'Replacement parts unavailable',   keywords: ['filter','replacement','parts','cannot find','hard to find','discontinued'],            color: '#EF9F27', team: 'product'   },
+  { label: 'Quality / QC issues',             keywords: ['quality control','used item','refurbished','defect','blue plastic','scratched'],        color: '#EF9F27', team: 'product'   },
+  { label: 'Packaging / unboxing issues',     keywords: ['packaging','box damaged','poorly packed','missing accessory','not included'],           color: '#EF9F27', team: 'product'   },
+  { label: 'Setup / installation difficult',  keywords: ['hard to setup','difficult to install','confusing setup','takes forever to set'],        color: '#BA7517', team: 'tech'      },
+  { label: 'Rice quality praised',            keywords: ['perfect rice','great rice','best rice','love this rice','delicious rice'],              color: '#639922', team: null        },
+];
+
+const TAG_LABELS = { detail:'Detail page', product:'Product', cs:'CS', packaging:'Packaging', escalated:'Escalated', positive:'Positive', manual:'Manual' };
+const TAG_CLASSES = { detail:'tag-detail', product:'tag-product', cs:'tag-cs', packaging:'tag-packaging', escalated:'tag-escalated', positive:'tag-positive', manual:'tag-manual' };
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+const S = {
+  user: null,
+  reviews: [],
+  tickets: [],
+  passwords: { ...DEFAULT_PASSWORDS },
+  activeTab: 'all',
+  page: 1,
+  selected: new Set(),
+  pendingEscalationIds: [],
+  issueCounts: [],
+  lastImportAt: null,
+  lastInsight: null,
+};
+
+// ── INDEXED DB (reviews cache + passwords fallback only) ──────────────────────
+let _db = null;
+
+function openDB() {
+  return new Promise((resolve) => {
+    if (_db) return resolve(_db);
+    try {
+      const req = indexedDB.open('reviewhub_v5', 1);
+      req.onupgradeneeded = (e) => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains('kv')) db.createObjectStore('kv', { keyPath: 'k' });
+      };
+      req.onsuccess = (e) => { _db = e.target.result; resolve(_db); };
+      req.onerror   = () => { _db = null; resolve(null); };
+    } catch { resolve(null); }
+  });
+}
+
+async function dbGet(key) {
+  const db = await openDB();
+  if (!db) return null;
+  return new Promise((resolve) => {
+    try {
+      const req = db.transaction('kv', 'readonly').objectStore('kv').get(key);
+      req.onsuccess = (e) => resolve(e.target.result ? e.target.result.v : null);
+      req.onerror   = () => resolve(null);
+    } catch { resolve(null); }
+  });
+}
+
+async function dbSet(key, value) {
+  const db = await openDB();
+  if (!db) return;
+  return new Promise((resolve) => {
+    try {
+      const tx = db.transaction('kv', 'readwrite');
+      tx.objectStore('kv').put({ k: key, v: value });
+      tx.oncomplete = resolve;
+      tx.onerror    = resolve;
+    } catch { resolve(); }
+  });
+}
+
+async function dbDel(key) {
+  const db = await openDB();
+  if (!db) return;
+  return new Promise((resolve) => {
+    try {
+      const tx = db.transaction('kv', 'readwrite');
+      tx.objectStore('kv').delete(key);
+      tx.oncomplete = resolve;
+      tx.onerror    = resolve;
+    } catch { resolve(); }
+  });
+}
+
+// ── API HELPERS ───────────────────────────────────────────────────────────────
+// All collaborative data (tickets, tags, passwords) goes through the server API.
+// Falls back gracefully when DATABASE_URL is not configured.
+
+let _dbAvailable = null; // null = unknown, true/false after health check
+
+async function checkDBAvailable() {
+  if (_dbAvailable !== null) return _dbAvailable;
+  try {
+    const res  = await fetch('/api/health');
+    const data = await res.json();
+    _dbAvailable = data.db === 'connected';
+  } catch {
+    _dbAvailable = false;
+  }
+  return _dbAvailable;
+}
+
+async function apiGet(path) {
+  const res = await fetch(path, { headers: { 'Content-Type': 'application/json' } });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || `API error ${res.status}`);
+  }
+  return res.json();
+}
+
+async function apiPost(path, body) {
+  const res = await fetch(path, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || `API error ${res.status}`);
+  }
+  return res.json();
+}
+
+async function apiPatch(path, body) {
+  const res = await fetch(path, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || `API error ${res.status}`);
+  }
+  return res.json();
+}
+
+// ── DATA LOADING ──────────────────────────────────────────────────────────────
+async function loadPersistedData() {
+  const dbOk = await checkDBAvailable();
+
+  // 1. Load reviews — from repo JSON (shared), with local cache fallback
+  await loadReviews(dbOk);
+
+  // 2. Load tickets — from DB if available, else empty
+  if (dbOk) {
+    try {
+      S.tickets = await apiGet('/api/tickets');
+    } catch (err) {
+      console.warn('[load] tickets failed:', err.message);
+      S.tickets = [];
+    }
+  } else {
+    S.tickets = [];
+  }
+
+  // 3. Load passwords — from DB if available, else local fallback
+  if (dbOk) {
+    try {
+      S.passwords = await apiGet('/api/passwords');
+    } catch {
+      S.passwords = { ...DEFAULT_PASSWORDS };
+    }
+  } else {
+    const local = await dbGet('passwords');
+    S.passwords = { ...DEFAULT_PASSWORDS, ...(local || {}) };
+  }
+
+  computeIssueCounts();
+}
+
+async function loadReviews(dbOk) {
+  // Step 1: Try the shared repo JSON (source of truth for review content)
+  try {
+    const res = await fetch('/data/reviews.json', { cache: 'no-cache' });
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data) && data.length) {
+        // Step 2: Overlay shared tags/escalations from DB
+        let tagMap = new Map();
+        if (dbOk) {
+          try {
+            const tags = await apiGet('/api/tags');
+            tags.forEach(t => tagMap.set(t.reviewId, t));
+          } catch (err) {
+            console.warn('[load] tags failed:', err.message);
+          }
+        }
+
+        S.reviews = data.map(r => {
+          const t = tagMap.get(r.id);
+          return {
+            ...r,
+            tags:      t ? t.tags      : (r.tags      || []),
+            escalated: t ? t.escalated : (r.escalated || false),
+            ticketId:  t ? t.ticketId  : (r.ticketId  || null),
+          };
+        });
+
+        // Cache locally for offline resilience
+        await dbSet('reviews_cache', S.reviews);
+        await dbSet('reviews_cache_at', Date.now());
+        S.lastImportAt = Date.now();
+        return;
+      }
+    }
+  } catch (err) {
+    console.warn('[load] shared reviews.json failed:', err.message);
+  }
+
+  // Step 3: Fall back to local cache
+  const cached = await dbGet('reviews_cache');
+  if (cached && cached.length) {
+    S.reviews = cached;
+    S.lastImportAt = await dbGet('reviews_cache_at');
+    showToast('Loaded from local cache — shared database unavailable', 'warn');
+  }
+}
+
+// ── PERSIST HELPERS ───────────────────────────────────────────────────────────
+// Tags/escalations: save to DB (shared) with local IndexedDB as fallback
+async function persistTagsForReviews(reviewIds) {
+  const dbOk = await checkDBAvailable();
+  const updates = reviewIds.map(id => {
+    const r = S.reviews.find(x => x.id === id);
+    if (!r) return null;
+    return { reviewId: id, tags: r.tags, escalated: r.escalated, ticketId: r.ticketId, updatedBy: S.user };
+  }).filter(Boolean);
+
+  if (!updates.length) return;
+
+  if (dbOk) {
+    try {
+      await apiPost('/api/tags', { updates });
+    } catch (err) {
+      console.warn('[persist tags] API failed, using local cache:', err.message);
+      await dbSet('reviews_cache', S.reviews);
+    }
+  } else {
+    // No DB — save to local cache so at least this user's session persists
+    await dbSet('reviews_cache', S.reviews);
+  }
+}
+
+// Tickets: always go to DB
+async function persistNewTicket(ticket) {
+  const dbOk = await checkDBAvailable();
+  if (dbOk) {
+    try {
+      await apiPost('/api/tickets', ticket);
+      return true;
+    } catch (err) {
+      console.error('[persist ticket]', err.message);
+      showToast('Could not save ticket to database: ' + err.message, 'err');
+      return false;
+    }
+  } else {
+    showToast('Database not configured — ticket saved locally only', 'warn');
+    return false;
+  }
+}
+
+async function persistTicketUpdate(ticketId, patch) {
+  const dbOk = await checkDBAvailable();
+  if (dbOk) {
+    try {
+      const updated = await apiPatch(`/api/tickets/${ticketId}`, patch);
+      // Sync back into local state
+      const idx = S.tickets.findIndex(t => t.id === ticketId);
+      if (idx !== -1) S.tickets[idx] = updated;
+      return updated;
+    } catch (err) {
+      console.error('[update ticket]', err.message);
+      showToast('Could not update ticket: ' + err.message, 'err');
+    }
+  }
+  return null;
+}
+
+async function persistPasswords() {
+  // passwords are now managed via /api/passwords in updatePassword()
+  // This is a no-op kept for compatibility
+}
+
+// Legacy aliases — kept so existing call sites don't break
+async function persistReviews() {
+  await dbSet('reviews_cache', S.reviews);
+}
+async function persistTickets() {
+  // tickets are persisted individually via persistNewTicket / persistTicketUpdate
+  // This is a no-op
+}
+
+
+// ── STABLE REVIEW ID ──────────────────────────────────────────────────────────
+// Hash of SKU + author + date + first 40 chars of title
+// Stable across re-imports as long as the source data doesn't change
+function stableId(sku, author, date, title) {
+  const s = `${sku}|${author}|${date}|${(title || '').slice(0, 40)}`;
+  let h = 0;
+  for (let i = 0; i < s.length; i++) {
+    h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
+  }
+  return 'r' + (h >>> 0).toString(36);
+}
+
+// ── REVIEW DATE PARSING ───────────────────────────────────────────────────────
+function parseReviewDate(dateStr) {
+  if (!dateStr) return 0;
+  try {
+    const s = String(dateStr).trim();
+    // "June 1, 2025" embedded anywhere (legacy Amazon format)
+    const m = s.match(/(\w+ \d{1,2},?\s*\d{4})/);
+    if (m) { const t = new Date(m[1]).getTime(); if (!isNaN(t)) return t; }
+    // ISO "2026-04-11" or "2026-04-11 00:00:00" (NEW tabs, Yotpo)
+    const iso = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (iso) { const t = new Date(+iso[1], +iso[2] - 1, +iso[3]).getTime(); if (!isNaN(t)) return t; }
+    // US numeric "4/11/26", "04/11/2026", or "6/11/2022 0:00" (Yotpo)
+    const us = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})(?:\s|$)/);
+    if (us) {
+      let y = +us[3]; if (y < 100) y += 2000;
+      const t = new Date(y, +us[1] - 1, +us[2]).getTime();
+      if (!isNaN(t)) return t;
+    }
+  } catch { /* */ }
+  return 0;
+}
+
+function formatReviewDate(dateStr) {
+  return String(dateStr || '')
+    .replace('Reviewed in the United States on ', '')
+    .replace(/Reviewed in \S+ on /, '')
+    .replace(/\s+\d{1,2}:\d{2}(:\d{2})?$/, '')  // strip time suffix from Yotpo dates
+    .trim();
+}
+
+// ── LOGIN ─────────────────────────────────────────────────────────────────────
+document.getElementById('login-btn').addEventListener('click', attemptLogin);
+document.getElementById('inp-pw').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') attemptLogin();
+});
+
+async function attemptLogin() {
+  const role  = document.getElementById('inp-role').value.trim();
+  const pw    = document.getElementById('inp-pw').value;
+  const errEl = document.getElementById('login-err');
+  errEl.classList.remove('on');
+
+  if (!role) { showLoginError('Please select your team.'); return; }
+
+  // Try server DB first, fall back to local cache
+  let passwords = { ...DEFAULT_PASSWORDS };
+  try {
+    const dbOk = await checkDBAvailable();
+    if (dbOk) {
+      passwords = await apiGet('/api/passwords');
+    } else {
+      const local = await dbGet('passwords');
+      if (local) passwords = { ...DEFAULT_PASSWORDS, ...local };
+    }
+  } catch {
+    const local = await dbGet('passwords');
+    if (local) passwords = { ...DEFAULT_PASSWORDS, ...local };
+  }
+
+  if (pw !== passwords[role]) {
+    showLoginError('Incorrect password. Please try again.');
+    document.getElementById('inp-pw').value = '';
+    document.getElementById('inp-pw').focus();
+    return;
+  }
+
+  S.user = role;
+  await loadPersistedData();
+  bootApp();
+}
+
+function showLoginError(msg) {
+  const errEl  = document.getElementById('login-err');
+  const msgEl  = document.getElementById('login-err-msg');
+  msgEl.textContent = msg;
+  errEl.classList.add('on');
+}
+
+function logout() {
+  S.user      = null;
+  S.reviews   = [];
+  S.tickets   = [];
+  S.selected  = new Set();
+  S.page      = 1;
+  S.activeTab = 'all';
+  document.getElementById('app').style.display   = 'none';
+  document.getElementById('login').style.display = 'flex';
+  document.getElementById('login-err').classList.remove('on');
+  document.getElementById('inp-pw').value  = '';
+  document.getElementById('inp-role').value = '';
+}
+
+// ── APP BOOT ──────────────────────────────────────────────────────────────────
+function bootApp() {
+  document.getElementById('login').style.display = 'none';
+  document.getElementById('app').style.display   = 'block';
+
+  const role = ROLES[S.user];
+  _id('user-avatar').textContent = role.label[0];
+  _id('user-name').textContent   = role.label;
+  _id('user-role').textContent   = role.access;
+  _id('sb-admin-section').style.display = S.user === 'admin' ? 'block' : 'none';
+
+  refreshBadges();
+  renderDashboard();
+  checkServerHealth();
+}
+
+function refreshBadges() {
+  _id('badge-reviews').textContent = S.reviews.length.toLocaleString();
+  const openTk = S.tickets.filter(t => t.status !== 'resolved').length;
+  _id('badge-tickets').textContent  = openTk;
+  _id('badge-tickets').style.display = openTk > 0 ? '' : 'none';
+
+  const subParts = [S.reviews.length.toLocaleString() + ' reviews'];
+  if (S.lastImportAt) subParts.push('last imported ' + timeAgo(S.lastImportAt));
+  _id('topbar-sub').textContent = S.reviews.length > 0
+    ? subParts.join(' · ')
+    : 'No reviews loaded — import an .xlsx or add manually';
+}
+
+async function checkServerHealth() {
+  try {
+    const res  = await fetch('/api/health');
+    if (!res.ok) return;
+    const data = await res.json();
+    _dbAvailable = data.db === 'connected';
+
+    const aiStatus    = _id('status-ai');
+    const slackStatus = _id('status-slack');
+    const dbStatus    = _id('status-db');
+
+    if (aiStatus)    { aiStatus.textContent    = data.ai    ? 'Connected' : 'Not configured'; aiStatus.className    = 'settings-status ' + (data.ai    ? 'status-ok' : 'status-missing'); }
+    if (slackStatus) { slackStatus.textContent = data.slack ? 'Connected' : 'Not configured'; slackStatus.className = 'settings-status ' + (data.slack ? 'status-ok' : 'status-missing'); }
+    if (dbStatus)    { dbStatus.textContent    = data.db === 'connected' ? 'Connected' : data.db === 'not configured' ? 'Not configured' : 'Error'; dbStatus.className = 'settings-status ' + (data.db === 'connected' ? 'status-ok' : 'status-missing'); }
+  } catch { /* server may not be running during local dev */ }
+}
+
+// ── NAVIGATION ────────────────────────────────────────────────────────────────
+const PAGE_TITLES = {
+  dashboard: 'Dashboard', reviews: 'All reviews', tickets: 'Tickets',
+  insights:  'AI Insights', import: 'Import data', add: 'Add review', settings: 'Settings',
+};
+
+function goPage(name, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  _id('page-' + name)?.classList.add('active');
+  if (el) el.classList.add('active');
+
+  _id('topbar-title').textContent = PAGE_TITLES[name] || name;
+  _id('topbar-right').innerHTML   = '';
+
+  if (name === 'reviews')   { _id('topbar-right').innerHTML = '<span style="font-size:11px;color:var(--text3)" id="rv-result-count"></span>'; renderReviews(); }
+  if (name === 'tickets')   renderTickets();
+  if (name === 'dashboard') renderDashboard();
+  if (name === 'add')       initAddForm();
+  if (name === 'insights')  initInsightsPage();
+  if (name === 'settings')  renderSettings();
+}
+
+// ── DASHBOARD ─────────────────────────────────────────────────────────────────
+function renderDashboard() {
+  const el = _id('dashboard-body');
+  if (!el) return;
+
+  if (S.reviews.length === 0) {
+    el.innerHTML = `
+      <div class="onboard-state">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg>
+        <div class="onboard-title">Welcome to ReviewHub</div>
+        <div class="onboard-sub">Import your Cuckoo Amazon Reviews Archive .xlsx to get started analyzing customer feedback and surfacing product improvements.</div>
+        <button class="btn btn-primary" onclick="goPage('import', _id('nav-import'))">Import reviews →</button>
+      </div>`;
+    return;
+  }
+
+  const rv     = S.reviews;
+  const total  = rv.length;
+  const rated  = rv.filter(r => r.rating > 0);
+  const avg    = rated.length ? (rated.reduce((a,r) => a + r.rating, 0) / rated.length).toFixed(1) : null;
+  const openTk = S.tickets.filter(t => t.status !== 'resolved').length;
+  const lowN   = rv.filter(r => r.rating > 0 && r.rating <= 2).length;
+  const lowPct = total ? Math.round(lowN / total * 100) : 0;
+
+  // Recent trend: last 30 days vs prior 30 days
+  const now = Date.now();
+  const last30  = rv.filter(r => r.ts && (now - r.ts) < 30*86400000);
+  const prior30 = rv.filter(r => r.ts && (now - r.ts) >= 30*86400000 && (now - r.ts) < 60*86400000);
+  const last30avg  = last30.length  ? (last30.reduce((a,r)  => a + r.rating, 0) / last30.length).toFixed(1)  : null;
+  const prior30avg = prior30.length ? (prior30.reduce((a,r) => a + r.rating, 0) / prior30.length).toFixed(1) : null;
+  const trendDir = last30avg && prior30avg
+    ? parseFloat(last30avg) >= parseFloat(prior30avg) ? 'pos' : 'neg'
+    : '';
+  const trendTxt = last30avg && prior30avg
+    ? (parseFloat(last30avg) - parseFloat(prior30avg) >= 0 ? '+' : '') +
+      (parseFloat(last30avg) - parseFloat(prior30avg)).toFixed(1) + ' vs prior 30d'
+    : last30.length ? last30.length + ' in last 30 days' : '';
+
+  // Rating distribution
+  const dist = [5,4,3,2,1].map(s => ({ s, n: rv.filter(r => Math.round(r.rating) === s).length }));
+  const distMax = Math.max(...dist.map(d => d.n), 1);
+  const distHtml = dist.map(d => `
+    <div class="rating-row">
+      <span class="rating-label">${d.s} ★</span>
+      <div class="rating-bar-bg"><div class="rating-bar" style="width:${Math.round(d.n/distMax*100)}%;${d.s<=2?'background:#E24B4A':''}"></div></div>
+      <span class="rating-count">${d.n}</span>
+    </div>`).join('');
+
+  // Issue bars
+  const issMax = Math.max(...S.issueCounts, 1);
+  const issHtml = ISSUE_PATTERNS.map((iss, i) => `
+    <div class="issue-item">
+      <div class="issue-header">
+        <div class="issue-dot" style="background:${iss.color}"></div>
+        <span class="issue-label">${iss.label}</span>
+        <span class="issue-count">${S.issueCounts[i]}</span>
+      </div>
+      <div class="issue-bar-bg"><div class="issue-bar" style="width:${Math.round(S.issueCounts[i]/issMax*100)}%;background:${iss.color}"></div></div>
+    </div>`).join('');
+
+  // Recent low-rated reviews
+  const lowRv = rv.filter(r => r.rating > 0 && r.rating <= 2)
+                   .sort((a,b) => (b.ts||0)-(a.ts||0))
+                   .slice(0, 6);
+
+  el.innerHTML = `
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-label">Total reviews</div>
+        <div class="stat-value">${total.toLocaleString()}</div>
+        <div class="stat-delta">${(() => { const w = rv.filter(r => r.source === 'website').length; return w > 0 ? `${(total - w).toLocaleString()} Amazon · ${w.toLocaleString()} Website` : `${last30.length} in last 30 days`; })()}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Avg. rating</div>
+        <div class="stat-value">${avg ? avg + ' ★' : '—'}</div>
+        <div class="stat-delta ${trendDir}">${trendTxt}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Open tickets</div>
+        <div class="stat-value">${openTk}</div>
+        <div class="stat-delta ${openTk > 5 ? 'neg' : 'pos'}">${openTk > 0 ? openTk + ' need attention' : 'All clear'}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">1–2 star reviews</div>
+        <div class="stat-value">${lowPct}%</div>
+        <div class="stat-delta ${lowPct > 12 ? 'neg' : 'pos'}">${lowN} reviews</div>
+      </div>
+    </div>
+    <div class="two-col">
+      <div>
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">Recent low-rated reviews</span>
+            <button class="btn btn-sm" onclick="goPage('reviews',_id('nav-reviews'));setTabByValue('low')" style="margin-left:auto">View all →</button>
+          </div>
+          ${lowRv.length ? lowRv.map(r => buildReviewRow(r, true)).join('') : emptyState('No low-rated reviews — great news!')}
+        </div>
+      </div>
+      <div>
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">Rating distribution</span></div>
+          <div style="padding:3px 0">${distHtml}</div>
+        </div>
+        <div class="panel" style="margin-top:14px">
+          <div class="panel-header">
+            <span class="panel-title">Issue signals</span>
+            <button class="btn btn-sm" onclick="goPage('insights',_id('nav-insights'))" style="margin-left:auto">AI analysis →</button>
+          </div>
+          ${issHtml}
+        </div>
+      </div>
+    </div>`;
+}
+
+function computeIssueCounts() {
+  S.issueCounts = ISSUE_PATTERNS.map(iss =>
+    S.reviews.filter(r => {
+      const txt = (r.title + ' ' + r.body).toLowerCase();
+      return iss.keywords.some(k => txt.includes(k));
+    }).length
+  );
+}
+
+// ── REVIEWS ───────────────────────────────────────────────────────────────────
+let _searchTimer = null;
+function debouncedSearch() {
+  clearTimeout(_searchTimer);
+  _searchTimer = setTimeout(renderReviews, 240);
+}
+
+function setTab(tabName, el) {
+  S.activeTab = tabName;
+  S.page      = 1;
+  S.selected  = new Set();
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  if (el) el.classList.add('active');
+  renderReviews();
+}
+
+function setTabByValue(val) {
+  const tabs = document.querySelectorAll('.tab');
+  tabs.forEach(t => {
+    const onclick = t.getAttribute('onclick') || '';
+    if (onclick.includes(`'${val}'`)) { t.classList.add('active'); S.activeTab = val; }
+    else t.classList.remove('active');
+  });
+  S.page = 1;
+  renderReviews();
+}
+
+function getFilteredReviews() {
+  const q      = (_id('search-input')?.value || '').toLowerCase().trim();
+  const skuF   = _id('filter-sku')?.value   || '';
+  const ratF   = _id('filter-rating')?.value || '';
+  const dateF  = parseInt(_id('filter-date')?.value || '0') || 0;
+  const srcF   = _id('filter-source')?.value || '';
+  const sortF  = _id('filter-sort')?.value  || 'date-desc';
+  const now    = Date.now();
+
+  let result = S.reviews.filter(r => {
+    if (S.activeTab === 'low'       && !(r.rating > 0 && r.rating <= 2)) return false;
+    if (S.activeTab === 'escalated' && !r.escalated) return false;
+    if (S.activeTab === 'untagged'  && r.tags.length > 0) return false;
+    if (srcF && (r.source === 'website' ? 'website' : 'amazon') !== srcF) return false;
+    if (skuF && r.sku !== skuF) return false;
+    if (ratF && Math.round(r.rating) !== parseInt(ratF)) return false;
+    if (dateF && r.ts && (now - r.ts) > dateF * 86400000) return false;
+    if (q && !(r.title + ' ' + r.body + ' ' + r.author).toLowerCase().includes(q)) return false;
+    return true;
+  });
+
+  result.sort((a, b) => {
+    if (sortF === 'date-asc')    return (a.ts || 0) - (b.ts || 0);
+    if (sortF === 'rating-asc')  return a.rating - b.rating;
+    if (sortF === 'rating-desc') return b.rating - a.rating;
+    return (b.ts || 0) - (a.ts || 0);
+  });
+
+  return result;
+}
+
+function renderReviews() {
+  // Rebuild SKU dropdown
+  const skuSel = _id('filter-sku');
+  if (skuSel) {
+    const current = skuSel.value;
+    const skus = [...new Set(S.reviews.map(r => r.sku))].sort();
+    if (skuSel.options.length !== skus.length + 1) {
+      skuSel.innerHTML = '<option value="">All SKUs</option>' +
+        skus.map(s => `<option value="${xe(s)}">${xe(s)}</option>`).join('');
+      skuSel.value = skus.includes(current) ? current : '';
+    }
+  }
+
+  const filtered = getFilteredReviews();
+  const total    = filtered.length;
+  const pages    = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  if (S.page > pages) S.page = 1;
+
+  const start = (S.page - 1) * PAGE_SIZE;
+  const end   = Math.min(start + PAGE_SIZE, total);
+  const slice = filtered.slice(start, end);
+
+  // Result count
+  const countEl = _id('rv-result-count');
+  if (countEl) countEl.textContent = total.toLocaleString() + ' reviews';
+
+  // Bulk bar
+  const selCount = S.selected.size;
+  const bulkBar  = _id('bulk-bar');
+  if (bulkBar) {
+    bulkBar.className = 'bulk-bar' + (selCount > 0 ? ' visible' : '');
+    const labelEl = _id('bulk-label');
+    if (labelEl) labelEl.textContent = `${selCount} selected`;
+  }
+
+  // Select-all state
+  const selectAllChk = _id('chk-select-all');
+  if (selectAllChk) {
+    selectAllChk.checked = slice.length > 0 && slice.every(r => S.selected.has(r.id));
+    selectAllChk.indeterminate = slice.some(r => S.selected.has(r.id)) && !selectAllChk.checked;
+  }
+
+  // Render rows
+  _id('reviews-list').innerHTML = slice.length
+    ? slice.map(r => buildReviewRow(r, false)).join('')
+    : emptyState('No reviews match your filters');
+
+  // Pagination
+  renderPagination(total, pages, start, end);
+}
+
+function renderPagination(total, pages, start, end) {
+  const el = _id('pagination-bar');
+  if (!el || pages <= 1) { if (el) el.innerHTML = ''; return; }
+
+  const lo = Math.max(1, S.page - 2);
+  const hi = Math.min(pages, S.page + 2);
+  let btns = '';
+
+  if (lo > 1) btns += `<button class="pag-btn" onclick="setPage(1)">1</button>${lo > 2 ? '<span style="padding:0 4px;color:var(--text3)">…</span>' : ''}`;
+  for (let i = lo; i <= hi; i++) {
+    btns += `<button class="pag-btn${i === S.page ? ' active' : ''}" onclick="setPage(${i})">${i}</button>`;
+  }
+  if (hi < pages) btns += `${hi < pages - 1 ? '<span style="padding:0 4px;color:var(--text3)">…</span>' : ''}<button class="pag-btn" onclick="setPage(${pages})">${pages}</button>`;
+
+  el.innerHTML = `
+    <div class="pagination">
+      <span>Showing ${start+1}–${end} of ${total.toLocaleString()}</span>
+      <div class="pag-btns">
+        <button class="pag-btn" onclick="setPage(S.page-1)" ${S.page===1?'disabled':''}>‹ Prev</button>
+        ${btns}
+        <button class="pag-btn" onclick="setPage(S.page+1)" ${S.page===pages?'disabled':''}>Next ›</button>
+      </div>
+    </div>`;
+}
+
+function setPage(p) {
+  S.page = p;
+  renderReviews();
+  _id('page-reviews')?.scrollTo(0, 0);
+}
+
+function buildReviewRow(r, compact) {
+  const starsHtml = [1,2,3,4,5].map(s =>
+    `<svg class="star" viewBox="0 0 10 10"><path class="${Math.round(r.rating)>=s?'star-fill':'star-empty'}" d="M5 0l1.2 3.6H10L7 5.8l1.1 3.7L5 7.3l-3.1 2.2L3 5.8 0 3.6h3.8z"/></svg>`
+  ).join('');
+
+  const visibleTags = r.tags.filter(t => t !== 'escalated');
+  const tagsHtml = [
+    r.manual ? `<span class="tag tag-manual">Manual</span>` : '',
+    r.source === 'website' ? `<span class="tag tag-detail">Website</span>` : '',
+    r.escalated ? `<span class="tag tag-escalated">⚑ Escalated</span>` : '',
+    ...visibleTags.map(t => `<span class="tag ${TAG_CLASSES[t] || ''}">${TAG_LABELS[t] || t}</span>`),
+  ].filter(Boolean).join('');
+
+  const dateDisplay = formatReviewDate(r.date);
+  const chkHtml = compact ? '' : `
+    <div class="rv-check">
+      <input type="checkbox" ${S.selected.has(r.id) ? 'checked' : ''}
+        style="width:14px;height:14px;cursor:pointer"
+        onchange="toggleSelect('${r.id}', this.checked)"
+        aria-label="Select review"/>
+    </div>`;
+
+  const rowClass = `review-row${compact?' compact':''}${S.selected.has(r.id)?' selected':''}`;
+  const ebHtml   = r.escalated
+    ? `<span class="tag tag-escalated" style="padding:3px 8px">⚑ Escalated</span>`
+    : `<button class="btn btn-sm" onclick="openEscalation(['${r.id}'])" aria-label="Escalate this review">Escalate ⚑</button>`;
+  const tagBtnHtml = r.escalated ? '' : `<button class="btn btn-sm" onclick="openEscalation(['${r.id}'])" aria-label="Tag this review">+ Tag</button>`;
+
+  return `<div class="${rowClass}" role="listitem">
+    ${chkHtml}
+    <div>
+      <div class="stars" aria-label="${r.rating} out of 5 stars">${starsHtml}</div>
+      <div class="rv-sku">${xe(r.sku)}</div>
+      <div class="rv-author">${xe(r.author)}</div>
+      ${!compact ? `<div class="rv-date">${xe(dateDisplay)}</div>` : ''}
+    </div>
+    <div>
+      <div class="rv-title" onclick="openReviewDetail('${r.id}')" tabindex="0" role="button" aria-label="View review: ${xe(r.title)}">${xe(r.title || '(no title)')}</div>
+      <div class="rv-body">${xe(r.body)}</div>
+      ${tagsHtml ? `<div class="rv-tags">${tagsHtml}</div>` : ''}
+    </div>
+    ${compact ? '' : `<div class="rv-actions">${ebHtml}${tagBtnHtml}</div>`}
+  </div>`;
+}
+
+// ── SELECTION ─────────────────────────────────────────────────────────────────
+function toggleSelect(id, checked) {
+  if (checked) S.selected.add(id);
+  else         S.selected.delete(id);
+  // Update bulk bar without full re-render
+  const selCount = S.selected.size;
+  const bb = _id('bulk-bar');
+  if (bb) {
+    bb.className = 'bulk-bar' + (selCount > 0 ? ' visible' : '');
+    const l = _id('bulk-label');
+    if (l) l.textContent = `${selCount} selected`;
+  }
+  // Update the select-all checkbox state
+  const filtered = getFilteredReviews();
+  const start = (S.page - 1) * PAGE_SIZE;
+  const slice = filtered.slice(start, Math.min(start + PAGE_SIZE, filtered.length));
+  const ca = _id('chk-select-all');
+  if (ca) {
+    ca.checked = slice.length > 0 && slice.every(r => S.selected.has(r.id));
+    ca.indeterminate = slice.some(r => S.selected.has(r.id)) && !ca.checked;
+  }
+}
+
+function toggleSelectAll(checked) {
+  const filtered = getFilteredReviews();
+  const start = (S.page - 1) * PAGE_SIZE;
+  const slice = filtered.slice(start, Math.min(start + PAGE_SIZE, filtered.length));
+  slice.forEach(r => { if (checked) S.selected.add(r.id); else S.selected.delete(r.id); });
+  renderReviews();
+}
+
+function clearSelection() {
+  S.selected = new Set();
+  renderReviews();
+}
+
+function bulkEscalate() {
+  const ids = [...S.selected];
+  if (!ids.length) return;
+  openEscalation(ids);
+}
+
+function bulkTag(cat) {
+  const ids = [...S.selected];
+  if (!ids.length) return;
+  let n = 0;
+  const changed = [];
+  ids.forEach(id => {
+    const r = S.reviews.find(x => x.id === id);
+    if (r && !r.tags.includes(cat)) { r.tags.push(cat); n++; changed.push(id); }
+  });
+  persistTagsForReviews(changed);
+  clearSelection();
+  renderReviews();
+  showToast(`Tagged ${n} review${n!==1?'s':''} as "${TAG_LABELS[cat] || cat}"`, 'ok');
+}
+
+// ── REVIEW DETAIL ─────────────────────────────────────────────────────────────
+function openReviewDetail(id) {
+  const r = S.reviews.find(x => x.id === id);
+  if (!r) return;
+
+  const starsHtml = [1,2,3,4,5].map(s =>
+    `<svg class="detail-star" viewBox="0 0 10 10"><path class="${Math.round(r.rating)>=s?'star-fill':'star-empty'}" d="M5 0l1.2 3.6H10L7 5.8l1.1 3.7L5 7.3l-3.1 2.2L3 5.8 0 3.6h3.8z"/></svg>`
+  ).join('');
+
+  const tagsHtml = r.tags
+    .map(t => `<span class="tag ${TAG_CLASSES[t] || ''}">${TAG_LABELS[t] || t}</span>`)
+    .join('');
+
+  const draftSection = (S.user === 'cs' || S.user === 'admin')
+    ? `<div class="ai-draft-section">
+        <div class="section-label">CS response drafting</div>
+        <button class="btn btn-info" onclick="draftCSResponse('${id}')" id="draft-btn-${id}">✦ Draft response with AI</button>
+        <div id="draft-output-${id}"></div>
+       </div>`
+    : '';
+
+  const linkedTicket = r.ticketId ? S.tickets.find(t => t.id === r.ticketId) : null;
+  const ticketHtml = linkedTicket
+    ? `<div style="margin-bottom:12px;padding:8px 12px;background:var(--amber-bg);border:1px solid var(--amber-bd);border-radius:var(--radius-sm);font-size:12px">
+        <strong>Linked ticket:</strong> ${xe(linkedTicket.reviewTitle)} — 
+        <span class="ticket-status-badge status-${linkedTicket.status}">${linkedTicket.status}</span>
+       </div>`
+    : '';
+
+  _id('review-detail-body').innerHTML = `
+    <div class="modal-title" id="detail-modal-title">${xe(r.title || '(no title)')}</div>
+    <div class="detail-stars" aria-label="${r.rating} stars">${starsHtml}</div>
+    <div class="detail-meta-grid">
+      <div class="detail-meta-item"><strong>SKU</strong> ${xe(r.sku)}</div>
+      <div class="detail-meta-item"><strong>Author</strong> ${xe(r.author)}</div>
+      <div class="detail-meta-item"><strong>Date</strong> ${xe(formatReviewDate(r.date))}</div>
+      ${r.verified ? `<div class="detail-meta-item"><strong>Verified</strong> ${xe(r.verified)}</div>` : ''}
+      ${r.style    ? `<div class="detail-meta-item"><strong>Style</strong> ${xe(r.style)}</div>` : ''}
+      ${r.source   ? `<div class="detail-meta-item"><strong>Source</strong> ${xe(r.source)}</div>` : ''}
+    </div>
+    ${tagsHtml ? `<div class="detail-tags">${tagsHtml}</div>` : ''}
+    ${ticketHtml}
+    <div class="detail-body">${xe(r.body || '(no review body)')}</div>
+    ${r.reply ? `<div style="margin-bottom:14px;padding:12px 14px;background:var(--blue-bg);border:1px solid var(--blue-bd);border-radius:var(--radius-sm);font-size:12px;line-height:1.7"><strong style="display:block;margin-bottom:4px;color:var(--blue)">Cuckoo replied:</strong>${xe(r.reply)}</div>` : ''}
+    ${r.url && r.url !== '-' ? `<a href="${xe(r.url)}" target="_blank" rel="noopener noreferrer" style="font-size:11px">${r.source === 'website' ? 'View on cuckooamerica.com' : 'View on Amazon'} ↗</a>` : ''}
+    ${draftSection}`;
+
+  const escBtn = _id('detail-escalate-btn');
+  if (escBtn) {
+    escBtn.style.display = r.escalated ? 'none' : 'inline-flex';
+    escBtn.onclick = () => { closeModal('modal-review-detail'); openEscalation([id]); };
+  }
+
+  openModal('modal-review-detail');
+}
+
+async function draftCSResponse(id) {
+  const r   = S.reviews.find(x => x.id === id);
+  if (!r) return;
+  const btn = _id(`draft-btn-${id}`);
+  const out = _id(`draft-output-${id}`);
+  if (!btn || !out) return;
+
+  btn.disabled    = true;
+  btn.textContent = 'Drafting…';
+  out.innerHTML   = `<div style="color:var(--text3);font-size:11px;padding:8px 0;display:flex;align-items:center;gap:8px"><div class="spinner"></div>Generating response...</div>`;
+
+  try {
+    const res = await callAI({
+      prompt: `You are a professional customer service representative for Cuckoo Electronics America. 
+Draft a warm, empathetic, and helpful Amazon seller response to this customer review.
+Guidelines: under 100 words, address their specific concern, offer a clear next step, professional but friendly tone.
+
+Product SKU: ${r.sku}
+Rating: ${r.rating}/5 stars
+Review title: ${r.title}
+Review: ${r.body}`,
+      maxTokens: 250,
+    });
+    out.innerHTML = `
+      <div class="ai-response-box" id="draft-text-${id}">${xe(res)}</div>
+      <div style="margin-top:8px;display:flex;gap:6px">
+        <button class="btn btn-sm" onclick="copyToClipboard('draft-text-${id}')">Copy response</button>
+      </div>`;
+  } catch (err) {
+    out.innerHTML = `<div style="color:var(--red);font-size:11px;padding:6px 0">${xe(err.message)}</div>`;
+  }
+
+  btn.disabled    = false;
+  btn.textContent = '✦ Draft response with AI';
+}
+
+// ── ESCALATION ────────────────────────────────────────────────────────────────
+function openEscalation(ids) {
+  if (!ids || !ids.length) return;
+  S.pendingEscalationIds = ids;
+
+  const titleEl = _id('esc-modal-title');
+  if (titleEl) titleEl.textContent = ids.length > 1 ? `Escalate ${ids.length} reviews` : 'Escalate review';
+
+  // Reset form
+  _id('esc-notes').value    = '';
+  _id('esc-priority').value = 'medium';
+  _id('esc-category').value = 'product';
+  document.querySelectorAll('#team-checkboxes input[type=checkbox]').forEach(c => c.checked = false);
+  _id('team-validation-msg').style.display = 'none';
+
+  updateSlackPreview();
+  openModal('modal-escalate');
+}
+
+function updateSlackPreview() {
+  const r = S.reviews.find(x => x.id === S.pendingEscalationIds[0]);
+  if (!r) return;
+
+  const priority = _id('esc-priority').value;
+  const notes    = _id('esc-notes').value;
+  const teams    = [...document.querySelectorAll('#team-checkboxes input:checked')].map(c => c.value);
+  const emojis   = { high: '🔴', medium: '🟡', low: '🟢' };
+  const starStr  = '★'.repeat(Math.round(r.rating)) + '☆'.repeat(5 - Math.round(r.rating));
+  const multiStr = S.pendingEscalationIds.length > 1 ? ` (+${S.pendingEscalationIds.length - 1} more)` : '';
+
+  // Only show preview if Slack is connected
+  fetch('/api/health')
+    .then(res => res.json())
+    .then(data => {
+      const wrap = _id('slack-preview-wrap');
+      const prev = _id('slack-preview-text');
+      if (wrap && prev) {
+        wrap.style.display = data.slack ? 'block' : 'none';
+        if (data.slack) {
+          prev.textContent =
+            `${emojis[priority] || '⚪'} *Review escalated — ${priority.toUpperCase()}${multiStr}*\n` +
+            `SKU: ${r.sku}\nRating: ${starStr} (${r.rating}/5)\nTitle: ${r.title}\n` +
+            `Assigned to: ${teams.map(t => ROLES[t]?.label || t).join(', ') || 'Unassigned'}` +
+            (notes ? `\nNotes: ${notes}` : '') +
+            (r.url && r.url !== '-' ? `\nAmazon link: ${r.url}` : '');
+        }
+      }
+    })
+    .catch(() => { /* server unavailable */ });
+}
+
+async function submitEscalation() {
+  const priority = _id('esc-priority').value;
+  const category = _id('esc-category').value;
+  const notes    = _id('esc-notes').value.trim();
+  const teams    = [...document.querySelectorAll('#team-checkboxes input:checked')].map(c => c.value);
+
+  if (teams.length === 0) {
+    _id('team-validation-msg').style.display = 'block';
+    return;
+  }
+  _id('team-validation-msg').style.display = 'none';
+
+  const now = Date.now();
+  let firstReview  = null;
+  const changedIds = [];
+  const newTickets = [];
+
+  S.pendingEscalationIds.forEach(id => {
+    const r = S.reviews.find(x => x.id === id);
+    if (!r) return;
+    if (!firstReview) firstReview = r;
+
+    r.escalated = true;
+    if (!r.tags.includes('escalated')) r.tags.push('escalated');
+    if (!r.tags.includes(category))    r.tags.push(category);
+    changedIds.push(id);
+
+    if (!r.ticketId) {
+      const ticket = {
+        id:          'TK_' + now + '_' + Math.random().toString(36).slice(2, 7),
+        reviewId:    r.id,
+        reviewTitle: r.title || '(no title)',
+        sku:         r.sku,
+        priority, category, notes, teams,
+        status:    'open',
+        createdAt: now,
+        createdBy: S.user,
+        comments:  [],
+        auditLog:  [{ action: 'created', by: S.user, at: now }],
+      };
+      r.ticketId = ticket.id;
+      S.tickets.push(ticket);
+      newTickets.push(ticket);
+    }
+  });
+
+  // Persist to DB in parallel — tags shared, tickets shared
+  await Promise.all([
+    persistTagsForReviews(changedIds),
+    ...newTickets.map(t => persistNewTicket(t)),
+  ]);
+
+  // Send Slack
+  if (firstReview) {
+    const emojis  = { high: '🔴', medium: '🟡', low: '🟢' };
+    const starStr = '★'.repeat(Math.round(firstReview.rating)) + '☆'.repeat(5 - Math.round(firstReview.rating));
+    const multi   = S.pendingEscalationIds.length > 1 ? ` (+${S.pendingEscalationIds.length - 1} more)` : '';
+    const blocks  = [
+      { type: 'header', text: { type: 'plain_text', text: `${emojis[priority] || '⚪'} Review escalated — ${priority.toUpperCase()}${multi}` } },
+      { type: 'section', fields: [
+        { type: 'mrkdwn', text: `*SKU:*\n${firstReview.sku}` },
+        { type: 'mrkdwn', text: `*Rating:*\n${starStr} (${firstReview.rating}/5)` },
+        { type: 'mrkdwn', text: `*Category:*\n${TAG_LABELS[category] || category}` },
+        { type: 'mrkdwn', text: `*Assigned to:*\n${teams.map(t => ROLES[t]?.label || t).join(', ')}` },
+      ]},
+      { type: 'section', text: { type: 'mrkdwn', text: `*"${firstReview.title}"*\n${firstReview.body.slice(0, 300)}${firstReview.body.length > 300 ? '…' : ''}` } },
+      ...(notes ? [{ type: 'section', text: { type: 'mrkdwn', text: `*Notes:* ${notes}` } }] : []),
+      ...(firstReview.url && firstReview.url !== '-' ? [{ type: 'actions', elements: [{ type: 'button', text: { type: 'plain_text', text: 'View on Amazon' }, url: firstReview.url }] }] : []),
+    ];
+    sendSlack({ blocks, text: `Review escalated — ${priority.toUpperCase()}` }).catch(() => {});
+  }
+
+  closeModal('modal-escalate');
+  S.selected = new Set();
+  refreshBadges();
+  renderDashboard();
+  computeIssueCounts();
+  if (_id('page-reviews').classList.contains('active')) renderReviews();
+  showToast(`${S.pendingEscalationIds.length} review${S.pendingEscalationIds.length !== 1 ? 's' : ''} escalated`, 'ok');
+}
+
+// ── TICKETS ───────────────────────────────────────────────────────────────────
+function renderTickets() {
+  const statusF   = _id('tk-filter-status')?.value   || '';
+  const teamF     = _id('tk-filter-team')?.value     || '';
+  const priorityF = _id('tk-filter-priority')?.value || '';
+  const catF      = _id('tk-filter-cat')?.value      || '';
+
+  // Role-based visibility: non-admins only see tickets assigned to their team
+  let visible = S.user === 'admin'
+    ? S.tickets
+    : S.tickets.filter(t => t.teams.includes(S.user));
+
+  visible = visible.filter(t => {
+    if (statusF   && t.status     !== statusF)                      return false;
+    if (teamF     && !t.teams.includes(teamF))                      return false;
+    if (priorityF && t.priority   !== priorityF)                    return false;
+    if (catF      && t.category   !== catF)                         return false;
+    return true;
+  });
+
+  // Sort: high priority first, then by creation date desc
+  const priorityOrder = { high: 0, medium: 1, low: 2 };
+  visible.sort((a, b) =>
+    (priorityOrder[a.priority] ?? 1) - (priorityOrder[b.priority] ?? 1) ||
+    b.createdAt - a.createdAt
+  );
+
+  const openCount = S.tickets.filter(t => t.status !== 'resolved').length;
+  _id('tickets-open-label').textContent = `${openCount} open`;
+
+  _id('tickets-list').innerHTML = visible.length
+    ? visible.map(t => buildTicketRow(t)).join('')
+    : emptyState('No tickets match your filters');
+}
+
+function buildTicketRow(t) {
+  const prioClass = { high: 't-high', medium: 't-medium', low: 't-low' }[t.priority] || 't-low';
+  const statusClass = { open: 'status-open', progress: 'status-progress', resolved: 'status-resolved' }[t.status] || 'status-open';
+  const statusLabel = { open: 'Open', progress: 'In progress', resolved: 'Resolved' }[t.status] || t.status;
+
+  const teamBadges = (t.teams || []).map(tm => {
+    const [bg, color] = ROLES[tm]?.color || ['var(--surface2)', 'var(--text2)'];
+    return `<span class="team-badge" style="background:${bg};color:${color}">${ROLES[tm]?.label || tm}</span>`;
+  }).join('');
+
+  const commentsHtml = (t.comments || []).map(c =>
+    `<div class="comment-item">
+      <strong>${xe(c.user)}</strong> · ${new Date(c.at).toLocaleDateString()} — ${xe(c.text)}
+    </div>`
+  ).join('');
+
+  const canComment = S.user === 'admin' || (t.teams || []).includes(S.user);
+
+  return `<div class="ticket-row" role="listitem">
+    <div class="ticket-priority ${prioClass}" title="${t.priority} priority"></div>
+    <div class="ticket-body">
+      <div class="ticket-title" 
+        ${t.reviewId ? `onclick="openReviewDetail('${t.reviewId}')" title="Click to view original review" style="cursor:pointer"` : `style="cursor:default"`}
+      >${xe(t.reviewTitle)}${t.isInsightTicket ? ' <span style="font-size:9px;padding:2px 6px;background:var(--purple-bg);color:var(--purple);border-radius:10px;font-weight:600;vertical-align:middle">AI Insight</span>' : ''}</div>
+      <div class="ticket-meta">${xe(t.sku)} · ${TAG_LABELS[t.category] || t.category} · ${timeAgo(t.createdAt)} · by ${xe(ROLES[t.createdBy]?.label || t.createdBy || 'System')}</div>
+      ${t.notes ? `<div class="ticket-notes">${xe(t.notes)}</div>` : ''}
+      <div class="ticket-teams badge-row">${teamBadges}</div>
+      <div class="comments-section">
+        ${(t.comments || []).length > 0 ? `<div class="comments-label">Activity (${t.comments.length})</div>${commentsHtml}` : ''}
+        ${canComment ? `
+          <div class="comment-input-row">
+            <input id="comment-${t.id}" placeholder="Add a comment or update..." aria-label="Comment on ticket"/>
+            <button class="btn btn-sm" onclick="addTicketComment('${t.id}')">Post</button>
+          </div>` : ''}
+      </div>
+    </div>
+    <div class="ticket-actions">
+      <select class="btn btn-sm" onchange="updateTicketStatus('${t.id}', this.value)" aria-label="Update ticket status" style="cursor:pointer">
+        <option value="open"     ${t.status==='open'     ?'selected':''}>Open</option>
+        <option value="progress" ${t.status==='progress' ?'selected':''}>In progress</option>
+        <option value="resolved" ${t.status==='resolved' ?'selected':''}>Resolved</option>
+      </select>
+      <span class="ticket-status-badge ${statusClass}">${statusLabel}</span>
+    </div>
+  </div>`;
+}
+
+async function addTicketComment(ticketId) {
+  const inp = _id(`comment-${ticketId}`);
+  if (!inp || !inp.value.trim()) return;
+
+  const text = inp.value.trim();
+  inp.value = '';
+
+  // Optimistic local update
+  const t = S.tickets.find(x => x.id === ticketId);
+  if (t) {
+    if (!t.comments) t.comments = [];
+    t.comments.push({ user: ROLES[S.user]?.label || S.user, text, at: Date.now() });
+  }
+  renderTickets();
+
+  // Persist to DB
+  try {
+    await persistTicketUpdate(ticketId, { comment: text, commentUser: ROLES[S.user]?.label || S.user });
+    showToast('Comment added', 'ok');
+  } catch (err) {
+    showToast('Comment saved locally — DB sync failed', 'warn');
+  }
+}
+
+async function updateTicketStatus(id, status) {
+  // Optimistic local update
+  const t = S.tickets.find(x => x.id === id);
+  if (t) t.status = status;
+  refreshBadges();
+  renderTickets();
+  renderDashboard();
+
+  // Persist to DB
+  try {
+    await persistTicketUpdate(id, { status, commentUser: S.user });
+    if (status === 'resolved') showToast('Ticket resolved ✓', 'ok');
+  } catch (err) {
+    showToast('Status updated locally — DB sync failed', 'warn');
+  }
+}
+
+// ── AI INSIGHTS ───────────────────────────────────────────────────────────────
+function initInsightsPage() {
+  const skuSel = _id('ai-filter-sku');
+  if (skuSel) {
+    const skus = [...new Set(S.reviews.map(r => r.sku))].sort();
+    skuSel.innerHTML = '<option value="">All products</option>' +
+      skus.map(s => `<option value="${xe(s)}">${xe(s)}</option>`).join('');
+  }
+}
+
+async function runInsights() {
+  const sku    = _id('ai-filter-sku').value;
+  const focus  = _id('ai-filter-focus').value;
+  const rating = _id('ai-filter-rating').value;
+  const source = _id('ai-filter-source')?.value || '';
+  const btn    = _id('ai-run-btn');
+  const out    = _id('ai-output');
+
+  // Hide action buttons while running
+  const exportBtn = _id('ai-export-btn');
+  const ticketBtn = _id('ai-ticket-btn');
+  if (exportBtn) exportBtn.style.display = 'none';
+  if (ticketBtn) ticketBtn.style.display = 'none';
+
+  // Filter reviews
+  let subset = S.reviews.filter(r => {
+    if (sku    && r.sku !== sku) return false;
+    if (source && (r.source === 'website' ? 'website' : 'amazon') !== source) return false;
+    if (rating === 'low'  && !(r.rating > 0 && r.rating <= 2)) return false;
+    if (rating === 'mid'  && Math.round(r.rating) !== 3)        return false;
+    if (rating === 'high' && !(r.rating >= 4))                  return false;
+    return true;
+  });
+
+  if (!subset.length) {
+    out.innerHTML = emptyState('No reviews match your filters. Try broadening the filters.');
+    return;
+  }
+
+  const sample = subset.slice(0, 80);
+
+  btn.disabled    = true;
+  btn.textContent = 'Analyzing…';
+  out.innerHTML   = `<div class="ai-loading"><div class="spinner"></div>Claude is analyzing ${sample.length} reviews…</div>`;
+
+  const focusMap = {
+    all:       'all improvement areas: detail page content, product design, packaging, and customer service',
+    detail:    'Amazon detail page improvements (title, bullet points, images, A+ content, keywords)',
+    product:   'product design, engineering, and quality improvements',
+    packaging: 'packaging design, unboxing experience, and instruction manual clarity',
+    cs:        'customer service response patterns, common escalations, and support ticket themes',
+  };
+
+  const reviewText = sample.map(r =>
+    `[${Math.round(r.rating)}★] SKU:${r.sku} | ${r.title} — ${r.body.slice(0, 250)}`
+  ).join('\n\n');
+
+  const prompt = `You are a senior product analyst at Cuckoo Electronics America. 
+Analyze these ${sample.length} Amazon customer reviews and provide specific, actionable insights focused on ${focusMap[focus]}.
+
+Format your response EXACTLY with these section headers:
+
+**KEY FINDINGS**
+List 3-5 most important patterns. Be specific — cite product names or SKUs where relevant.
+
+**SPECIFIC IMPROVEMENTS**
+For each improvement include: what to change, why, and priority (High/Medium/Low). Be concrete.
+
+**POSITIVE SIGNALS**
+What customers consistently love. Use these in marketing and to inform what NOT to change.
+
+**RECOMMENDED NEXT STEPS**
+3-5 specific actions the team should take this week. Name the responsible team for each.
+
+---
+Reviews:
+${reviewText}`;
+
+  try {
+    const text = await callAI({ prompt, maxTokens: 1500 });
+
+    // Store for export and ticket creation
+    S.lastInsight = {
+      text,
+      sku: sku || 'All products',
+      focus,
+      rating,
+      source: source || 'all',
+      reviewCount: sample.length,
+      totalCount: subset.length,
+      generatedAt: new Date().toLocaleString(),
+    };
+
+    const html = xe(text)
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\n\n/g, '</p><p style="margin-top:10px">')
+      .replace(/\n/g, '<br>');
+
+    out.innerHTML = `
+      <div class="ai-result"><p>${html}</p></div>
+      <div class="insights-meta">
+        Analyzed ${sample.length} reviews${subset.length > 80 ? ` (${subset.length} total, sampled top 80)` : ''} · 
+        ${sku ? `SKU: ${xe(sku)} · ` : ''}
+        Generated ${new Date().toLocaleString()}
+      </div>`;
+
+    // Show action buttons now that we have a result
+    if (exportBtn) exportBtn.style.display = 'inline-flex';
+    if (ticketBtn) ticketBtn.style.display = 'inline-flex';
+
+  } catch (err) {
+    out.innerHTML = `
+      <div style="background:var(--red-bg);border:1px solid var(--red-bd);border-radius:var(--radius-sm);padding:14px;font-size:12px;color:var(--red)">
+        <strong>Could not generate insights</strong><br>${xe(err.message)}
+      </div>`;
+  }
+
+  btn.disabled    = false;
+  btn.textContent = 'Generate insights ✦';
+}
+
+// ── INSIGHT EXPORT ────────────────────────────────────────────────────────────
+function exportInsights() {
+  if (!S.lastInsight) { showToast('No insight to export — run an analysis first', 'warn'); return; }
+  const ins = S.lastInsight;
+
+  const header = [
+    '='.repeat(60),
+    'REVIEWHUB — AI INSIGHT REPORT',
+    'Cuckoo Electronics America',
+    '='.repeat(60),
+    '',
+    `Product:       ${ins.sku}`,
+    `Focus area:    ${ins.focus === 'all' ? 'All improvement areas' : ins.focus}`,
+    `Rating filter: ${ins.rating === 'all' ? 'All ratings' : ins.rating}`,
+    `Reviews analyzed: ${ins.reviewCount}${ins.totalCount > ins.reviewCount ? ` (of ${ins.totalCount} total)` : ''}`,
+    `Generated:     ${ins.generatedAt}`,
+    '',
+    '='.repeat(60),
+    '',
+  ].join('\n');
+
+  const content = header + ins.text;
+  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `cuckoo-insight-${ins.sku.toLowerCase().replace(/\s+/g,'-')}-${new Date().toISOString().slice(0,10)}.txt`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('Insight exported as .txt', 'ok');
+}
+
+// ── INSIGHT TICKET ────────────────────────────────────────────────────────────
+function openInsightTicket() {
+  if (!S.lastInsight) { showToast('Run an analysis first', 'warn'); return; }
+  const ins = S.lastInsight;
+
+  // Pre-fill summary with the full insight text (user can trim it down)
+  _id('itk-summary').value   = ins.text;
+  _id('itk-priority').value  = 'medium';
+  _id('itk-category').value  = ins.focus !== 'all' ? ins.focus : 'product';
+  _id('itk-source').value    = `AI Insight · ${ins.sku} · ${ins.reviewCount} reviews · ${ins.generatedAt}`;
+  _id('itk-team-err').style.display = 'none';
+
+  // Pre-check teams based on focus area
+  const focusTeamMap = { detail: 'marketing', product: 'product', packaging: 'product', cs: 'cs' };
+  document.querySelectorAll('#itk-teams input[type=checkbox]').forEach(c => {
+    c.checked = c.value === (focusTeamMap[ins.focus] || 'product');
+  });
+
+  openModal('modal-insight-ticket');
+}
+
+async function submitInsightTicket() {
+  const summary  = _id('itk-summary').value.trim();
+  const priority = _id('itk-priority').value;
+  const category = _id('itk-category').value;
+  const source   = _id('itk-source').value;
+  const teams    = [...document.querySelectorAll('#itk-teams input:checked')].map(c => c.value);
+
+  if (!summary)        { showToast('Please enter an insight summary', 'warn'); return; }
+  if (!teams.length)   { _id('itk-team-err').style.display = 'block'; return; }
+  _id('itk-team-err').style.display = 'none';
+
+  const ticket = {
+    id:          'TK_INS_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+    reviewId:    null,
+    reviewTitle: 'AI Insight: ' + summary.slice(0, 80) + (summary.length > 80 ? '…' : ''),
+    sku:         S.lastInsight?.sku || 'Multiple',
+    priority,
+    category,
+    notes:       `${summary}\n\n— Source: ${source}`,
+    teams,
+    status:      'open',
+    createdAt:   Date.now(),
+    createdBy:   S.user,
+    isInsightTicket: true,
+    comments:    [],
+    auditLog:    [{ action: 'created from AI insight', by: S.user, at: Date.now() }],
+  };
+
+  S.tickets.push(ticket);
+  await persistNewTicket(ticket);
+  refreshBadges();
+
+  // Send Slack if configured
+  const emojis = { high: '🔴', medium: '🟡', low: '🟢' };
+  sendSlack({
+    text: `${emojis[priority] || '⚪'} New ticket from AI Insight — ${priority.toUpperCase()}`,
+    blocks: [
+      { type: 'header', text: { type: 'plain_text', text: `${emojis[priority] || '⚪'} AI Insight ticket — ${priority.toUpperCase()}` } },
+      { type: 'section', fields: [
+        { type: 'mrkdwn', text: `*SKU/Product:*\n${ticket.sku}` },
+        { type: 'mrkdwn', text: `*Category:*\n${TAG_LABELS[category] || category}` },
+        { type: 'mrkdwn', text: `*Assigned to:*\n${teams.map(t => ROLES[t]?.label || t).join(', ')}` },
+        { type: 'mrkdwn', text: `*Source:*\n${source}` },
+      ]},
+      { type: 'section', text: { type: 'mrkdwn', text: summary.slice(0, 400) + (summary.length > 400 ? '…' : '') } },
+    ],
+  }).catch(() => {});
+
+  closeModal('modal-insight-ticket');
+  showToast('Ticket created from AI insight', 'ok');
+
+  // Navigate to tickets so they can see it
+  goPage('tickets', _id('nav-tickets'));
+}
+
+// ── API CALLS (via server proxy) ──────────────────────────────────────────────
+async function callAI({ prompt, maxTokens = 1000, system }) {
+  const res = await fetch('/api/ai', {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify({ prompt, maxTokens, system }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'AI request failed');
+  return data.text;
+}
+
+async function sendSlack(payload) {
+  const res = await fetch('/api/slack', {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.error || 'Slack request failed');
+  }
+}
+
+async function testSlack() {
+  try {
+    await sendSlack({ text: '✅ ReviewHub — Slack integration is working!' });
+    showToast('Test message sent to Slack', 'ok');
+  } catch (err) {
+    showToast('Slack test failed: ' + err.message, 'err');
+  }
+}
+
+// ── IMPORT ────────────────────────────────────────────────────────────────────
+function handleDragOver(e)  { e.preventDefault(); _id('drop-zone').classList.add('drag-over'); }
+function handleDragLeave(e) { _id('drop-zone').classList.remove('drag-over'); }
+function handleDrop(e)      { e.preventDefault(); _id('drop-zone').classList.remove('drag-over'); const f = e.dataTransfer.files[0]; if (f) confirmThenImport(f); }
+function handleFileInput(e) { const f = e.target.files[0]; if (f) confirmThenImport(f); e.target.value = ''; }
+
+function confirmThenImport(file) {
+  if (S.reviews.length > 0) {
+    showConfirm(
+      'Replace existing reviews?',
+      `Importing "${file.name}" will merge with your ${S.reviews.length.toLocaleString()} existing reviews. Escalations and tags are preserved by stable ID. This cannot be undone.`,
+      () => processXLSX(file)
+    );
+  } else {
+    processXLSX(file);
+  }
+}
+
+function processXLSX(file) {
+  const statusEl = _id('import-status');
+  const logEl    = _id('import-log');
+  statusEl.textContent = 'Reading file…';
+  logEl.innerHTML      = '';
+
+  const reader = new FileReader();
+  reader.onerror = () => {
+    statusEl.textContent = '✗ Failed to read file. Please try again.';
+    showToast('File read failed', 'err');
+  };
+
+  reader.onload = async (e) => {
+    try {
+      const wb = XLSX.read(e.target.result, { type: 'array' });
+
+      // Build a map of existing reviews for fast lookup during merge
+      const existingMap = new Map(S.reviews.map(r => [r.id, r]));
+      const manualReviews = S.reviews.filter(r => r.manual);
+
+      const imported = [];
+      const logLines = [];
+      let skippedUnpublished = 0;
+
+      for (const sheetName of wb.SheetNames) {
+        // Skip index / non-review sheets (covers "Index", "Index (old)", "Index (new)", etc.)
+        const lower = sheetName.toLowerCase();
+        if (lower.startsWith('index') || ['sheet12', 'readme', 'summary'].includes(lower)) continue;
+
+        const ws = wb.Sheets[sheetName];
+        // raw:false → dates arrive as formatted strings instead of Excel serial numbers
+        const rows = XLSX.utils.sheet_to_json(ws, { defval: '', raw: false });
+        if (!rows.length) continue;
+
+        const headers = Object.keys(rows[0]);
+        let count = 0;
+
+        if (isYotpoSheet(headers)) {
+          // ── D2C WEBSITE REVIEWS (Yotpo export) ──
+          // One sheet holds every product; SKU is a column, not the sheet name.
+          for (const row of rows) {
+            // Only published reviews go into the app (skips Rejected / flagged-fake)
+            const status = String(row['Review Status'] || '').trim().toLowerCase();
+            if (status && status !== 'published') { skippedUnpublished++; continue; }
+
+            const title  = decodeEntities(String(row['Review Title']   || '').trim());
+            const body   = decodeEntities(String(row['Review Content'] || '').trim());
+            if (!title && !body) continue;
+
+            const sku    = String(row['Product SKU'] || '').trim()
+                        || String(row['Product Handle'] || '').trim().toUpperCase()
+                        || 'D2C Website';
+            const author = String(row['Reviewer Display Name'] || 'Anonymous').trim();
+            const date   = String(row['Review Creation Date'] || '').trim();
+            const rat    = parseFloat(row['Review Score']);
+            // Yotpo review IDs are stable — safer than hashing for this source
+            const yid    = String(row['Review ID'] || '').replace(/\.0$/, '');
+            const id     = yid ? 'y' + yid : stableId(sku, author, date, title);
+
+            // Company reply (only if it was public)
+            const replyPublic = String(row['Comment Public'] || '') === '1' || String(row['Comment Public'] || '').toLowerCase() === 'true';
+            const reply = replyPublic ? decodeEntities(String(row['Comment Content'] || '').trim()) : '';
+
+            imported.push({
+              id, sku, date, ts: parseReviewDate(date), author,
+              rating: isNaN(rat) ? 0 : rat,
+              title, body,
+              verified: '',
+              url:      String(row['Product URL'] || '').trim(),
+              variation: '',
+              style:    String(row['Product Title'] || '').trim(),
+              source:   'website',
+              reply,
+              tags:      existingMap.get(id)?.tags      ?? [],
+              escalated: existingMap.get(id)?.escalated ?? false,
+              ticketId:  existingMap.get(id)?.ticketId  ?? null,
+            });
+            count++;
+          }
+          if (count > 0) logLines.push(`${sheetName}: ${count} website reviews`);
+
+        } else {
+          // ── AMAZON REVIEWS (legacy or NEW tab format) ──
+          // Legacy columns:  Date, Author, Verified, Title, Body, Rating, URL
+          // NEW tab columns: ASIN, Title, Content, Verified Purchase, Rating, Author, Date, Reviews URL
+          const isNewFormat = headers.includes('Content') && !headers.includes('Body');
+          // Strip "NEW " prefix so both tabs for the same product merge into one SKU
+          const sku = sheetName.replace(/^NEW\s+/i, '').trim();
+
+          for (const row of rows) {
+            const title = String(row.Title || '').trim();
+            const body  = String(isNewFormat ? row.Content : row.Body || '').trim();
+            if (!title && !body) continue;
+
+            const author = String(row.Author || 'Anonymous').trim();
+            const date   = String(row.Date   || '').trim();
+            const rat    = parseFloat(row.Rating);
+            const id     = stableId(sku, author, date, title);
+
+            imported.push({
+              id, sku, date, ts: parseReviewDate(date), author,
+              rating: isNaN(rat) ? 0 : rat,
+              title, body,
+              verified: String(isNewFormat ? row['Verified Purchase'] : row.Verified || '').trim(),
+              url:      String(isNewFormat ? row['Reviews URL'] : row.URL || '').trim(),
+              variation: String(row.Variation || '').trim(),
+              style:     String(isNewFormat ? row.Model : row.Style || '').trim(),
+              source:   'amazon',
+              reply:    '',
+              tags:      existingMap.get(id)?.tags      ?? [],
+              escalated: existingMap.get(id)?.escalated ?? false,
+              ticketId:  existingMap.get(id)?.ticketId  ?? null,
+            });
+            count++;
+          }
+          if (count > 0) logLines.push(`${sku}${isNewFormat ? ' (new format)' : ''}: ${count} review${count!==1?'s':''}`);
+        }
+      }
+
+      // Dedupe. Exact ID collisions first, then a fuzzy pass to catch the same
+      // review appearing in both a legacy tab and its NEW tab (their date strings
+      // differ, so the hash IDs differ — match on sku + author + title instead).
+      const byId = new Map();
+      for (const r of imported) {
+        const prev = byId.get(r.id);
+        if (!prev || (r.body.length > prev.body.length)) byId.set(r.id, r);
+      }
+      const byFuzzy = new Map();
+      for (const r of byId.values()) {
+        const key = `${r.sku}|${r.author.toLowerCase()}|${r.title.toLowerCase().slice(0, 40)}`;
+        const prev = byFuzzy.get(key);
+        if (!prev) { byFuzzy.set(key, r); continue; }
+        // Keep the richer record; carry over any tags/escalation from the loser
+        const keep  = (r.body.length > prev.body.length || (!prev.ts && r.ts)) ? r : prev;
+        const lose  = keep === r ? prev : r;
+        if (lose.escalated && !keep.escalated) { keep.escalated = true; keep.ticketId = keep.ticketId || lose.ticketId; }
+        keep.tags = [...new Set([...keep.tags, ...lose.tags])];
+        byFuzzy.set(key, keep);
+      }
+      const deduped = [...byFuzzy.values()];
+      const dupesRemoved = imported.length - deduped.length;
+
+      // Merge: deduped imports + preserved manual entries
+      S.reviews      = [...deduped, ...manualReviews];
+      S.lastImportAt = Date.now();
+
+      computeIssueCounts();
+      await Promise.all([persistReviews(), dbSet('lastImportAt', S.lastImportAt)]);
+
+      refreshBadges();
+      renderDashboard();
+
+      const extras = [];
+      if (dupesRemoved > 0)       extras.push(`${dupesRemoved} duplicates merged`);
+      if (skippedUnpublished > 0) extras.push(`${skippedUnpublished} unpublished website reviews skipped`);
+      statusEl.textContent = `✓ Imported ${deduped.length.toLocaleString()} reviews from ${logLines.length} sheets${extras.length ? ' · ' + extras.join(' · ') : ''}`;
+      logEl.innerHTML = logLines.map(l => `<div style="font-size:11px;color:var(--text2);padding:2px 0">✓ ${xe(l)}</div>`).join('');
+      showToast(`Imported ${deduped.length.toLocaleString()} reviews`, 'ok');
+    } catch (err) {
+      console.error('[import error]', err);
+      statusEl.textContent = `✗ Import failed: ${err.message}`;
+      showToast('Import failed — see details above', 'err');
+    }
+  };
+
+  reader.readAsArrayBuffer(file);
+}
+
+// Yotpo export detection: distinctive columns that never appear in Amazon tabs
+function isYotpoSheet(headers) {
+  return headers.includes('Review Content') && headers.includes('Product SKU');
+}
+
+// Decode HTML entities like &#x27; that appear in Yotpo exports
+function decodeEntities(s) {
+  if (!s || s.indexOf('&') === -1) return s;
+  const el = document.createElement('textarea');
+  el.innerHTML = s;
+  return el.value;
+}
+
+// ── EXPORT ────────────────────────────────────────────────────────────────────
+function handleExport() {
+  if (!S.reviews.length) {
+    showToast('No reviews to export', 'warn');
+    return;
+  }
+
+  // Export the currently filtered view (or all reviews if on a different page)
+  const toExport = _id('page-reviews')?.classList.contains('active')
+    ? getFilteredReviews()
+    : S.reviews;
+
+  const header = ['ID','SKU','Date','Author','Rating','Title','Body','Verified','Style','Tags','Escalated','URL','Source'];
+  const rows   = toExport.map(r => [
+    r.id, r.sku, r.date, r.author, r.rating,
+    r.title, r.body, r.verified, r.style || '',
+    (r.tags || []).join(';'),
+    r.escalated ? 'Yes' : 'No',
+    r.url || '', r.source || 'import',
+  ]);
+
+  const csvContent = [header, ...rows].map(row =>
+    row.map(cell => {
+      const s = String(cell ?? '');
+      return (s.includes(',') || s.includes('"') || s.includes('\n'))
+        ? `"${s.replace(/"/g, '""')}"`
+        : s;
+    }).join(',')
+  ).join('\n');
+
+  const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8' }); // BOM for Excel compat
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `cuckoo-reviews-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast(`Exported ${toExport.length.toLocaleString()} reviews`, 'ok');
+}
+
+// ── EXPORT FOR REPO (shared database) ────────────────────────────────────────
+// Exports reviews as reviews.json to be committed to public/data/reviews.json
+// All users will load this file automatically on login if they have no local data.
+function exportForRepo() {
+  if (!S.reviews.length) {
+    showToast('No reviews to export — import an .xlsx first', 'warn');
+    return;
+  }
+
+  // Strip local-only fields (tags, escalated, ticketId) so the shared file
+  // is a clean baseline. Each user's browser preserves their own tags locally.
+  const clean = S.reviews
+    .filter(r => !r.manual) // exclude manually-added reviews (those are personal)
+    .map(r => ({
+      id:        r.id,
+      sku:       r.sku,
+      date:      r.date,
+      ts:        r.ts,
+      author:    r.author,
+      rating:    r.rating,
+      title:     r.title,
+      body:      r.body,
+      verified:  r.verified,
+      url:       r.url,
+      variation: r.variation,
+      style:     r.style,
+      source:    r.source || 'amazon',
+      reply:     r.reply  || '',
+      tags:      [],
+      escalated: false,
+      ticketId:  null,
+    }));
+
+  const payload = clean; // plain array — app handles it directly
+  const json    = JSON.stringify(payload, null, 2);
+  const blob    = new Blob([json], { type: 'application/json' });
+  const url     = URL.createObjectURL(blob);
+  const a       = document.createElement('a');
+  a.href        = url;
+  a.download    = 'reviews.json';
+  a.click();
+  URL.revokeObjectURL(url);
+
+  const statusEl = _id('export-repo-status');
+  if (statusEl) statusEl.textContent = `✓ ${clean.length.toLocaleString()} reviews exported — commit to public/data/reviews.json`;
+  showToast(`Exported ${clean.length.toLocaleString()} reviews as reviews.json`, 'ok');
+}
+
+function initAddForm() {
+  if (!_id('add-date').value) {
+    _id('add-date').value = new Date().toISOString().split('T')[0];
+  }
+  const skus = [...new Set(S.reviews.map(r => r.sku))].sort();
+  _id('sku-datalist').innerHTML = skus.map(s => `<option value="${xe(s)}">`).join('');
+  _id('add-form-error').style.display = 'none';
+}
+
+async function submitAddReview() {
+  const title   = _id('add-title').value.trim();
+  const body    = _id('add-body').value.trim();
+  const sku     = _id('add-sku').value.trim();
+  const errorEl = _id('add-form-error');
+  errorEl.style.display = 'none';
+
+  if (!sku)            { showFormError('Please enter a SKU or product name.'); return; }
+  if (!title && !body) { showFormError('Please enter at least a title or review body.'); return; }
+
+  const dateVal = _id('add-date').value;
+  const dateStr = dateVal
+    ? 'Reviewed in the United States on ' +
+      new Date(dateVal + 'T12:00:00').toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' })
+    : '';
+  const ts = dateVal ? new Date(dateVal + 'T12:00:00').getTime() : Date.now();
+
+  const rating = parseInt(_id('add-rating').value, 10) || 5;
+  const id     = 'manual_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+
+  const review = {
+    id, sku, date: dateStr, ts,
+    author:   _id('add-author').value.trim() || 'Anonymous',
+    rating,
+    title, body,
+    verified: _id('add-verified').value,
+    url:      _id('add-url').value.trim(),
+    style:    _id('add-style').value.trim(),
+    source:   _id('add-source').value,
+    manual:   true,
+    tags:     [],
+    escalated: false,
+    ticketId:  null,
+  };
+
+  S.reviews.unshift(review);
+  computeIssueCounts();
+  await persistReviews();
+  refreshBadges();
+  resetAddForm();
+  showToast('Review saved', 'ok');
+  goPage('reviews', _id('nav-reviews'));
+}
+
+function showFormError(msg) {
+  const el = _id('add-form-error');
+  el.textContent    = msg;
+  el.style.display  = 'block';
+}
+
+function resetAddForm() {
+  ['add-author','add-title','add-body','add-sku','add-style','add-url'].forEach(id => {
+    const el = _id(id); if (el) el.value = '';
+  });
+  _id('add-rating').value   = '5';
+  _id('add-verified').value = 'yes';
+  _id('add-source').value   = 'manual';
+  _id('add-date').value     = new Date().toISOString().split('T')[0];
+  _id('add-form-error').style.display = 'none';
+}
+
+// ── SETTINGS ──────────────────────────────────────────────────────────────────
+function renderSettings() {
+  checkServerHealth();
+
+  const pwEl = _id('password-settings-body');
+  if (!pwEl) return;
+
+  pwEl.innerHTML = Object.entries(ROLES).map(([key, role]) => `
+    <div class="settings-row">
+      <div>
+        <div class="settings-label">${role.label}</div>
+        <div class="settings-desc">Leave blank to keep current password.</div>
+      </div>
+      <input class="settings-input" type="password" autocomplete="new-password"
+        placeholder="New password…"
+        onchange="updatePassword('${key}', this.value); this.value = ''"
+        aria-label="New password for ${role.label}"/>
+    </div>`).join('');
+}
+
+async function updatePassword(role, val) {
+  if (!val || val.length < 4) {
+    showToast('Password must be at least 4 characters', 'warn');
+    return;
+  }
+  try {
+    const dbOk = await checkDBAvailable();
+    if (dbOk) {
+      await apiPost('/api/passwords', { role, password: val });
+    } else {
+      // Fallback: save locally
+      S.passwords[role] = val;
+      await dbSet('passwords', S.passwords);
+    }
+    showToast(`Password updated for ${ROLES[role]?.label || role}`, 'ok');
+  } catch (err) {
+    showToast('Failed to update password: ' + err.message, 'err');
+  }
+}
+
+async function confirmClearAll() {
+  showConfirm(
+    'Clear all data?',
+    'This will permanently delete all reviews, tickets, tags, and settings from this browser. This cannot be undone.',
+    async () => {
+      await Promise.all([dbDel('reviews'), dbDel('tickets'), dbDel('passwords'), dbDel('lastImportAt')]);
+      S.reviews   = [];
+      S.tickets   = [];
+      S.passwords = { ...DEFAULT_PASSWORDS };
+      S.lastImportAt = null;
+      S.issueCounts  = [];
+      refreshBadges();
+      renderDashboard();
+      showToast('All data cleared', 'ok');
+    }
+  );
+}
+
+// ── MODALS ────────────────────────────────────────────────────────────────────
+function openModal(id)  { _id(id)?.classList.add('open'); }
+function closeModal(id) { _id(id)?.classList.remove('open'); }
+
+// Close on overlay click
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) overlay.classList.remove('open');
+  });
+});
+
+// Close on Escape
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));
+  }
+});
+
+function showConfirm(title, body, onOk) {
+  _id('confirm-title').textContent = title;
+  _id('confirm-body').textContent  = body;
+  _id('confirm-ok-btn').onclick    = () => { closeModal('modal-confirm'); onOk(); };
+  openModal('modal-confirm');
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────────────────
+const TOAST_ICONS = {
+  ok:   '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm3.65 5.35l-4.5 4.5-1.8-1.8.7-.7 1.1 1.1 3.8-3.8.7.7z"/></svg>',
+  err:  '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm.75 10.25h-1.5v-1.5h1.5v1.5zm0-3h-1.5V4.75h1.5v3.5z"/></svg>',
+  warn: '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1L1 14h14L8 1zm.75 9.5h-1.5v-1.5h1.5v1.5zm0-3h-1.5V5.5h1.5v2.5z"/></svg>',
+};
+
+function showToast(msg, type = '') {
+  const container = _id('toast-container');
+  const t = document.createElement('div');
+  t.className = `toast${type ? ' ' + type : ''}`;
+  t.innerHTML = (TOAST_ICONS[type] || '') + xe(msg);
+  container.appendChild(t);
+
+  requestAnimationFrame(() => { requestAnimationFrame(() => { t.classList.add('show'); }); });
+
+  setTimeout(() => {
+    t.classList.remove('show');
+    setTimeout(() => t.remove(), 250);
+  }, 3500);
+}
+
+// ── UTILITIES ─────────────────────────────────────────────────────────────────
+function _id(id)   { return document.getElementById(id); }
+function xe(s)     { return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function emptyState(msg) {
+  return `<div class="empty-state" role="status"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg><p>${xe(msg)}</p></div>`;
+}
+function timeAgo(ts) {
+  if (!ts) return 'unknown';
+  const diff = Date.now() - ts;
+  const mins  = Math.floor(diff / 60000);
+  const hours = Math.floor(diff / 3600000);
+  const days  = Math.floor(diff / 86400000);
+  if (mins  <  1) return 'just now';
+  if (mins  < 60) return `${mins}m ago`;
+  if (hours < 24) return `${hours}h ago`;
+  if (days  <  7) return `${days}d ago`;
+  return new Date(ts).toLocaleDateString();
+}
+function copyToClipboard(elementId) {
+  const el = _id(elementId);
+  if (!el) return;
+  const text = el.textContent || el.innerText;
+  navigator.clipboard.writeText(text)
+    .then(() => showToast('Copied to clipboard', 'ok'))
+    .catch(() => showToast('Copy failed', 'err'));
+}
+
+// Keyboard navigation for nav items
+document.querySelectorAll('.nav-item[tabindex]').forEach(el => {
+  el.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); el.click(); }
+  });
+});
+</script>
+</body>
+</html>
